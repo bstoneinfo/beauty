@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white" >
+
+    <com.bstoneinfo.lib.view.BSPagerSlidingTabView
+        android:id="@+id/pagerSlidingTabStrip"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:background="@drawable/pager_sliding_tab_bg"
+        android:color="#1A000000" />
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/tab_pagers"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/adbar"
+        android:layout_below="@+id/pagerSlidingTabStrip" />
+
+    <RelativeLayout
+        android:id="@+id/adbar"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:background="#ff0099ff"
+        android:visibility="gone" />
+
+</RelativeLayout>

@@ -1,0 +1,83 @@
+<RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/radiogroup"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:layout_alignParentBottom="true"
+    android:background="#ff000000"
+    android:gravity="center_vertical"
+    android:orientation="horizontal" >
+
+    <RadioButton
+        style="@style/tab_font"
+        android:layout_width="match_parent"
+        android:layout_height="60dip"
+        android:layout_marginLeft="-3dip"
+        android:layout_marginRight="-3dip"
+        android:layout_weight="1"
+        android:background="#FFF0F0F0"
+        android:button="@null"
+        android:drawableTop="@drawable/tab_explore_selector"
+        android:focusable="true"
+        android:gravity="center"
+        android:paddingBottom="2dip"
+        android:paddingTop="4dip"
+        android:tag="radio_button0"
+        android:text="@string/tab_explore"
+        android:textColor="@color/tab_indicator_text" />
+
+    <RadioButton
+        style="@style/tab_font"
+        android:layout_width="match_parent"
+        android:layout_height="60dip"
+        android:layout_marginLeft="-3dip"
+        android:layout_marginRight="-3dip"
+        android:layout_weight="1"
+        android:background="#FFF0F0F0"
+        android:button="@null"
+        android:drawableTop="@drawable/tab_history_selector"
+        android:focusable="true"
+        android:gravity="center"
+        android:paddingBottom="2dip"
+        android:paddingTop="4dip"
+        android:tag="radio_button1"
+        android:text="@string/tab_history"
+        android:textColor="@color/tab_indicator_text" />
+
+    <RadioButton
+        style="@style/tab_font"
+        android:layout_width="match_parent"
+        android:layout_height="60dip"
+        android:layout_marginLeft="-3dip"
+        android:layout_marginRight="-3dip"
+        android:layout_weight="1"
+        android:background="#FFF0F0F0"
+        android:button="@null"
+        android:drawableTop="@drawable/tab_favorite_selector"
+        android:focusable="true"
+        android:gravity="center"
+        android:paddingBottom="2dip"
+        android:paddingTop="4dip"
+        android:tag="radio_button2"
+        android:text="@string/tab_favorite"
+        android:textColor="@color/tab_indicator_text" />
+
+    <RadioButton
+        style="@style/tab_font"
+        android:layout_width="match_parent"
+        android:layout_height="60dip"
+        android:layout_marginLeft="-3dip"
+        android:layout_marginRight="-3dip"
+        android:layout_weight="1"
+        android:background="#FFF0F0F0"
+        android:button="@null"
+        android:drawableTop="@drawable/tab_settings_selector"
+        android:focusable="true"
+        android:gravity="center"
+        android:paddingBottom="2dip"
+        android:paddingTop="4dip"
+        android:tag="radio_button3"
+        android:text="@string/tab_settings"
+        android:textColor="@color/tab_indicator_text" />
+
+</RadioGroup>

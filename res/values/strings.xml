@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">East Beauty</string>
+    <string name="tab_explore">发现</string>
+    <string name="tab_history">足迹</string>
+    <string name="tab_favorite">收藏</string>
+    <string name="tab_settings">设置</string>
+    <string name="loadmore">加载更多</string>
+    <string name="tab_51">清纯</string>
+    <string name="tab_52">女神</string>
+    
+</resources>
