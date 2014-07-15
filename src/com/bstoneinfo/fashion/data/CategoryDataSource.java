@@ -15,7 +15,6 @@ import com.bstoneinfo.lib.common.BSApplication;
 import com.bstoneinfo.lib.common.BSLog;
 import com.bstoneinfo.lib.common.BSNotificationCenter;
 import com.bstoneinfo.lib.common.BSUtils;
-import com.bstoneinfo.lib.net.BSHttpUrlConnection.ConnectionStatus;
 import com.bstoneinfo.lib.net.BSJsonConnection;
 import com.bstoneinfo.lib.net.BSJsonConnection.BSJsonConnectionListener;
 
@@ -32,6 +31,8 @@ public class CategoryDataSource {
     private int nextHistroyIndex = 0;
     private int nextExploreGroup = -1;
     private BSJsonConnection exploreJsonConnection;
+    private BSJsonConnection histroyJsonConnection;
+    private boolean isLoadingExplore = false, isLoadingHistroy = false;
 
     public CategoryDataSource(String name, BSNotificationCenter notificationCenter) {
         this.categoryName = name;
@@ -62,13 +63,14 @@ public class CategoryDataSource {
     }
 
     public void exploreMore() {
-        if (exploreJsonConnection != null && exploreJsonConnection.getConnectionStatus() == ConnectionStatus.Running) {
+        if (isLoadingExplore) {
             return;
         }
+        isLoadingExplore = true;
         BSLog.d("nextExploreGroup=" + nextExploreGroup);
         final String relativePath = "/fashion/" + categoryName + "/v2/" + nextExploreGroup + ".json";
         final ArrayList<CategoryItemData> dataList;
-        if (nextExploreGroup == 0) {
+        if (nextExploreGroup <= 0) {
             dataList = new ArrayList<CategoryItemData>();
         } else {
             dataList = loadJsonDataFromLocal(relativePath);
@@ -77,7 +79,7 @@ public class CategoryDataSource {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    notifyExploreFinished(nextExploreGroup, dataList);
+                    notifyExploreFinished(dataList);
                 }
             }, 100);
         } else {
@@ -89,23 +91,26 @@ public class CategoryDataSource {
                     BSLog.d(urlString + " success");
                     ArrayList<CategoryItemData> dataList = loadJsonData(jsonObject);
                     if (dataList != null && dataList.size() > 0) {
-                        String cachePath = BSUtils.getCachePath(relativePath);
-                        BSUtils.saveStringToFile(jsonObject.toString(), cachePath);
+                        BSUtils.saveStringToFile(jsonObject.toString(), BSUtils.getCachePath(relativePath));
                     }
-                    notifyExploreFinished(nextExploreGroup, dataList);
+                    notifyExploreFinished(dataList);
                 }
 
                 @Override
                 public void failed(Exception exception) {
                     BSLog.d(urlString + " failed " + exception.toString());
-                    notificationCenter.notifyOnUIThread(CATEGORY_EXPLORE_FINISHED + categoryName, null);
+                    notifyExploreFinished(null);
                 }
             });
         }
     }
 
-    private void notifyExploreFinished(int loadExploreGroup, ArrayList<CategoryItemData> dataList) {
+    private void notifyExploreFinished(ArrayList<CategoryItemData> dataList) {
         notificationCenter.notifyOnUIThread(CATEGORY_EXPLORE_FINISHED + categoryName, dataList);
+        isLoadingExplore = false;
+        if (dataList == null) {
+            return;
+        }
         JSONArray newHistroyJsonArray = new JSONArray();
         for (int i = 0; i < histroyJsonArray.length(); i++) {
             int group = histroyJsonArray.optInt(i);
@@ -135,6 +140,58 @@ public class CategoryDataSource {
             }
             nextExploreGroup--;
         }
+    }
+
+    public void histroyMore() {
+        if (isLoadingHistroy) {
+            return;
+        }
+        isLoadingHistroy = true;
+        BSLog.d("nextHistroyIndex=" + nextHistroyIndex);
+        final String relativePath = "/fashion/" + categoryName + "/v2/" + histroyJsonArray.optInt(nextHistroyIndex) + ".json";
+        final ArrayList<CategoryItemData> dataList;
+        if (nextHistroyIndex <= 0) {
+            dataList = new ArrayList<CategoryItemData>();
+        } else {
+            dataList = loadJsonDataFromLocal(relativePath);
+        }
+        if (dataList != null) {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    notifyHistroyFinished(dataList);
+                }
+            }, 100);
+        } else {
+            final String urlString = "http://" + MyUtils.getHost() + relativePath;
+            histroyJsonConnection = new BSJsonConnection(urlString);
+            histroyJsonConnection.start(new BSJsonConnectionListener() {
+                @Override
+                public void finished(JSONObject jsonObject) {
+                    BSLog.d(urlString + " success");
+                    ArrayList<CategoryItemData> dataList = loadJsonData(jsonObject);
+                    if (dataList != null && dataList.size() > 0) {
+                        BSUtils.saveStringToFile(jsonObject.toString(), BSUtils.getCachePath(relativePath));
+                    }
+                    notifyHistroyFinished(dataList);
+                }
+
+                @Override
+                public void failed(Exception exception) {
+                    BSLog.d(urlString + " failed " + exception.toString());
+                    notifyHistroyFinished(null);
+                }
+            });
+        }
+    }
+
+    private void notifyHistroyFinished(ArrayList<CategoryItemData> dataList) {
+        notificationCenter.notifyOnUIThread(CATEGORY_HISTORY_FINISHED + categoryName, dataList);
+        isLoadingHistroy = false;
+        if (dataList == null) {
+            return;
+        }
+        nextHistroyIndex--;
     }
 
     private ArrayList<CategoryItemData> loadJsonDataFromLocal(String relPath) {
