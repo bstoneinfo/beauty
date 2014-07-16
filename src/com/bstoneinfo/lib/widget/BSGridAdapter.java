@@ -43,7 +43,7 @@ public abstract class BSGridAdapter extends BSBaseAdapter {
             holder.itemview = new View[numColumns];
             for (int i = 0; i < numColumns; i++) {
                 int cellPosition = position * numColumns + i;
-                BSViewCell cell = createCell();
+                BSViewCell cell = createCell(cellPosition);
                 cellList.add(cell);
                 cell.position = cellPosition;
                 holder.itemview[i] = cell.getRootView();

@@ -13,7 +13,7 @@ public abstract class BSBaseAdapter extends BaseAdapter {
     protected final ArrayList<?> dataList;
     protected final ArrayList<BSViewCell> cellList = new ArrayList<BSViewCell>();
 
-    public abstract BSViewCell createCell();
+    public abstract BSViewCell createCell(int position);
 
     public BSBaseAdapter(Context context, ArrayList<?> dataList) {
         this.context = context;
@@ -60,7 +60,7 @@ public abstract class BSBaseAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         final BSViewCell cell;
         if (convertView == null) {
-            cell = createCell();
+            cell = createCell(position);
             cellList.add(cell);
             convertView = cell.getRootView();
             convertView.setTag(cell);
