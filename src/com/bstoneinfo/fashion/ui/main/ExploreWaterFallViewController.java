@@ -1,4 +1,4 @@
-package com.bstoneinfo.fashion.ui;
+package com.bstoneinfo.fashion.ui.main;
 
 import android.content.Context;
 

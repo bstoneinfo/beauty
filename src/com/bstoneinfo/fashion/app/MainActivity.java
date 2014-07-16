@@ -1,10 +1,14 @@
-package com.bstoneinfo.fashion.ui;
+package com.bstoneinfo.fashion.app;
 
 import java.util.ArrayList;
 
 import android.os.Bundle;
 
 import com.bstoneinfo.fashion.data.CategoryManager;
+import com.bstoneinfo.fashion.ui.main.ExploreViewController;
+import com.bstoneinfo.fashion.ui.main.FavoriteViewController;
+import com.bstoneinfo.fashion.ui.main.HistroyViewController;
+import com.bstoneinfo.fashion.ui.main.SettingsViewController;
 import com.bstoneinfo.lib.ui.BSActivity;
 import com.bstoneinfo.lib.ui.BSTabBarController;
 import com.bstoneinfo.lib.ui.BSViewController;

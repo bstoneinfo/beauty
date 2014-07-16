@@ -1,4 +1,4 @@
-package com.bstoneinfo.fashion.ui;
+package com.bstoneinfo.fashion.ui.main;
 
 import java.util.ArrayList;
 
