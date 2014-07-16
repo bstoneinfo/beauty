@@ -22,4 +22,11 @@ public class CategoryManager {
         }
         return ds;
     }
+
+    public void reset() {
+        for (CategoryDataSource ds : dataSourceMap.values()) {
+            ds.destroy();
+        }
+        dataSourceMap.clear();
+    }
 }

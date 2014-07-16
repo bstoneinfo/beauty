@@ -58,6 +58,17 @@ public class CategoryDataSource {
         }
     }
 
+    public void destroy() {
+        if (exploreJsonConnection != null) {
+            exploreJsonConnection.cancel();
+            exploreJsonConnection = null;
+        }
+        if (histroyJsonConnection != null) {
+            histroyJsonConnection.cancel();
+            histroyJsonConnection = null;
+        }
+    }
+
     protected SharedPreferences getPreferences() {
         return BSApplication.getApplication().getSharedPreferences("category_" + categoryName, 0);
     }

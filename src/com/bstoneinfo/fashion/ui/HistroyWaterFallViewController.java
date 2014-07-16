@@ -12,6 +12,7 @@ public class HistroyWaterFallViewController extends WaterFallViewController {
 
     @Override
     protected void loadMore() {
+        getDataSource().histroyMore();
     }
 
 }

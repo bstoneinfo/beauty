@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import android.os.Bundle;
 
+import com.bstoneinfo.fashion.data.CategoryManager;
 import com.bstoneinfo.lib.ui.BSActivity;
 import com.bstoneinfo.lib.ui.BSTabBarController;
 import com.bstoneinfo.lib.ui.BSViewController;
@@ -29,6 +30,12 @@ public class MainActivity extends BSActivity {
 
         BSViewController mainViewController = new BSTabBarController(this, R.layout.maintabbar, childViewControllers, 0);
         setMainViewController(mainViewController);
+    }
+
+    @Override
+    protected void onDestroy() {
+        CategoryManager.getInstance().reset();
+        super.onDestroy();
     }
 
 }
