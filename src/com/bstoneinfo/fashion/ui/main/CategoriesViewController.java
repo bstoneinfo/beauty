@@ -7,7 +7,7 @@ import android.graphics.Typeface;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 
 import com.bstoneinfo.lib.ui.BSActivity;
-import com.bstoneinfo.lib.ui.BSPagerViewController;
+import com.bstoneinfo.lib.ui.BSPagerBarViewController;
 import com.bstoneinfo.lib.ui.BSViewController;
 
 import custom.R;
@@ -32,7 +32,7 @@ public abstract class CategoriesViewController extends BSViewController {
         childViewControllers.add(createChildViewController("51"));
         childViewControllers.add(createChildViewController("52"));
 
-        BSPagerViewController pagerViewController = new BSPagerViewController(getContext(), childViewControllers, titles);
+        BSPagerBarViewController pagerViewController = new BSPagerBarViewController(getContext(), childViewControllers, titles);
         pagerViewController.setAllCaps(false);
         pagerViewController.setShouldExpand(true);
         pagerViewController.setIndicatorHeight(BSActivity.dip2px(4));

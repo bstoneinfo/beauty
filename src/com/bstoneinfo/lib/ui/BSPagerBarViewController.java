@@ -15,7 +15,7 @@ import com.bstoneinfo.lib.view.BSPagerSlidingTabView;
 
 import custom.R;
 
-public class BSPagerViewController extends BSViewController {
+public class BSPagerBarViewController extends BSViewController {
 
     private final ArrayList<String> titles;
     private final BSPagerSlidingTabView pagerSlidingTabStrip;
@@ -24,7 +24,7 @@ public class BSPagerViewController extends BSViewController {
     private OnPageChangeListener onPageChangeListener;
     private int currentSelectedPosition = -1;
 
-    public BSPagerViewController(Context context, ArrayList<BSViewController> childViewControllers, ArrayList<String> titles) {
+    public BSPagerBarViewController(Context context, ArrayList<BSViewController> childViewControllers, ArrayList<String> titles) {
         super(context, R.layout.bs_pager_view_controller);
         getChildViewControllers().addAll(childViewControllers);
         this.titles = titles;
