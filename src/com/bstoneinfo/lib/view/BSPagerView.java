@@ -15,7 +15,7 @@ import com.bstoneinfo.lib.widget.BSViewCell;
 public class BSPagerView extends ViewPager {
 
     public interface CreateCellDelegate {
-        BSViewCell createCell(int position);
+        BSViewCell createCell();
     }
 
     private ArrayList<?> dataList;
@@ -59,11 +59,12 @@ public class BSPagerView extends ViewPager {
             if (createCellDelegate == null) {
                 return null;
             }
-            BSViewCell cell = createCellDelegate.createCell(position);
+            BSViewCell cell = createCellDelegate.createCell();
             View view = null;
             if (cell != null) {
                 cellArray.put(position, cell);
                 view = cell.getRootView();
+                cell.position = position;
                 cell.loadContent(dataList.get(position));
             }
             ViewPager viewPager = (ViewPager) container;

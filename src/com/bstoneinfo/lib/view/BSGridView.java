@@ -51,8 +51,8 @@ public class BSGridView extends ListView {
         }
         adapter = new BSGridAdapter(getContext(), dataList, numColumns, itemWidth, itemHeight, horzSpacing, vertSpacing) {
             @Override
-            public BSViewCell createCell(int position) {
-                return createCellDelegate.createCell(position);
+            public BSViewCell createCell() {
+                return createCellDelegate.createCell();
             }
         };
         setAdapter(adapter);

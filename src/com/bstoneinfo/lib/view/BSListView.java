@@ -17,7 +17,7 @@ import custom.R;
 public class BSListView extends ListView {
 
     public interface CreateCellDelegate {
-        BSViewCell createCell(int position);
+        BSViewCell createCell();
     }
 
     public interface PullUpWillLoadListener {
@@ -65,8 +65,8 @@ public class BSListView extends ListView {
         }
         adapter = new BSBaseAdapter(getContext(), dataList) {
             @Override
-            public BSViewCell createCell(int position) {
-                return createCellDelegate.createCell(position);
+            public BSViewCell createCell() {
+                return createCellDelegate.createCell();
             }
         };
         setAdapter(adapter);

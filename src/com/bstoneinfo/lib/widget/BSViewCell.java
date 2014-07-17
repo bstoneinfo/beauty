@@ -1,33 +1,31 @@
 package com.bstoneinfo.lib.widget;
 
 import android.content.Context;
+import android.view.LayoutInflater;
 import android.view.View;
 
-public class BSViewCell {
+public abstract class BSViewCell {
 
-    int position = -1;
-    private Object itemData;
-    private View rootView;
+    public int position = -1;
+    private final View rootView;
 
     public BSViewCell(View rootView) {
         this.rootView = rootView;
+    }
+
+    public BSViewCell(Context context, int layout) {
+        this.rootView = LayoutInflater.from(context).inflate(layout, null);
     }
 
     public Context getContext() {
         return rootView.getContext();
     }
 
-    public Object getItemData() {
-        return itemData;
-    }
-
     public View getRootView() {
         return rootView;
     }
 
-    public void loadContent(Object data) {
-        itemData = data;
-    }
+    abstract public void loadContent(Object data);
 
     public void updateContent(Object data) {
     }
