@@ -14,11 +14,21 @@ import android.support.v4.util.LruCache;
 import android.text.TextUtils;
 
 import com.bstoneinfo.lib.net.BSHttpUrlConnection;
+import com.bstoneinfo.lib.net.BSHttpUrlConnection.ProgressListener;
 import com.bstoneinfo.lib.net.BSHttpUrlConnectionQueue;
 import com.bstoneinfo.lib.net.BSImageConnection;
 import com.bstoneinfo.lib.net.BSImageConnection.BSImageConnectionListener;
 
 public class BSImageLoader {
+
+    public enum BSImageLoadStatus {
+        INIT,
+        LOCAL_LOADING,
+        REMOTE_LOADING,
+        LOADED,
+        FAILED,
+        CANCELED
+    }
 
     public interface BSImageLoaderListener {
         public void finished(Bitmap bitmap);
@@ -26,8 +36,15 @@ public class BSImageLoader {
         public void failed(Throwable throwable);
     }
 
+    public interface StatusChangedListener {
+        void statusChanged(BSImageLoadStatus status);
+    }
+
     private static final LruCache<String, Bitmap> imageCache;
     private static final BSLooperThread loadThread;
+    private StatusChangedListener statusChangedListener;
+    private ProgressListener progressListener;
+    private BSImageLoadStatus loadStatus = BSImageLoadStatus.INIT;
 
     static {
         int percent = BSApplication.getApplication().getRemoteConfig().optInt("ImageCachePercent", 15);
@@ -64,7 +81,6 @@ public class BSImageLoader {
         }
     }
 
-    private boolean canceled = false;
     private final ArrayList<BSHttpUrlConnection> connections = new ArrayList<BSHttpUrlConnection>();
     private BSHttpUrlConnectionQueue connectionQueue;
 
@@ -75,19 +91,43 @@ public class BSImageLoader {
         connectionQueue = queue;
     }
 
+    public BSImageLoadStatus getImageLoadStatus() {
+        return loadStatus;
+    }
+
+    public boolean isLoading() {
+        return loadStatus == BSImageLoadStatus.LOCAL_LOADING || loadStatus == BSImageLoadStatus.REMOTE_LOADING;
+    }
+
+    private void setImageLoadStatus(BSImageLoadStatus status) {
+        loadStatus = status;
+        if (statusChangedListener != null) {
+            statusChangedListener.statusChanged(status);
+        }
+    }
+
+    public void setStatusChangedListener(StatusChangedListener statusChangedListener) {
+        this.statusChangedListener = statusChangedListener;
+    }
+
+    public void setProgressListener(ProgressListener progressListener) {
+        this.progressListener = progressListener;
+    }
+
     public void loadImage(final String imageUrl, final BSImageLoaderListener listener) {
-        if (canceled) {
+        String localPath = getDiskPath(imageUrl);
+        if (TextUtils.isEmpty(localPath)) {
+            return;
+        }
+        if (getImageLoadStatus() != BSImageLoadStatus.INIT) {
             return;
         }
         final Handler handler = new Handler();
-        String localPath = getDiskPath(imageUrl);
-        if (TextUtils.isEmpty(localPath)) {
-            notifyFailed(handler, listener, new Exception(imageUrl + " load error."));
-            return;
-        }
         if (new File(localPath).exists()) {
+            setImageLoadStatus(BSImageLoadStatus.LOCAL_LOADING);
             loadBitampFromLocalFile(handler, localPath, listener);
         } else if (isHttpUrl(imageUrl)) {
+            setImageLoadStatus(BSImageLoadStatus.REMOTE_LOADING);
             loadThread.run(new Runnable() {
                 @Override
                 public void run() {
@@ -112,25 +152,25 @@ public class BSImageLoader {
     }
 
     public void cancel() {
-        canceled = true;
         for (BSHttpUrlConnection connection : connections) {
             connection.cancel();
         }
         connections.clear();
+        setImageLoadStatus(BSImageLoadStatus.CANCELED);
     }
 
-    public Bitmap getBitampFromMemoryCache(String imageUrl) {
+    public static Bitmap getBitampFromMemoryCache(String imageUrl) {
         if (imageCache == null) {
             return null;
         }
         synchronized (imageCache) {
-            return imageCache.get(imageUrl);
+            return imageCache.get(getKey(imageUrl));
         }
     }
 
-    public void addBitampToMemoryCache(String imageUrl, Bitmap bitmap) {
+    private void addBitampToMemoryCache(String imageUrl, Bitmap bitmap) {
         synchronized (imageCache) {
-            imageCache.put(imageUrl, bitmap);
+            imageCache.put(getKey(imageUrl), bitmap);
         }
     }
 
@@ -138,7 +178,7 @@ public class BSImageLoader {
         loadThread.run(new Runnable() {
             @Override
             public void run() {
-                if (canceled) {
+                if (getImageLoadStatus() == BSImageLoadStatus.CANCELED) {
                     return;
                 }
                 InputStream stream = null;
@@ -163,43 +203,53 @@ public class BSImageLoader {
     }
 
     private void notifyFinished(Handler handler, final BSImageLoaderListener listener, final Bitmap bm) {
-        if (!canceled && listener != null) {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    listener.finished(bm);
-                }
-            });
+        if (isLoading()) {
+            setImageLoadStatus(BSImageLoadStatus.LOADED);
+            if (listener != null) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.finished(bm);
+                    }
+                });
+            }
         }
     }
 
     private void notifyFailed(Handler handler, final BSImageLoaderListener listener, final Throwable e) {
-        if (!canceled && listener != null) {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    listener.failed(e);
-                }
-            });
+        if (isLoading()) {
+            setImageLoadStatus(BSImageLoadStatus.FAILED);
+            if (listener != null) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.failed(e);
+                    }
+                });
+            }
         }
     }
 
-    private boolean isHttpUrl(String imageUrl) {
+    private static boolean isHttpUrl(String imageUrl) {
         return imageUrl.startsWith("http://") || imageUrl.startsWith("https://");
     }
 
-    private boolean isFileUrl(String imageUrl) {
+    private static boolean isFileUrl(String imageUrl) {
         return imageUrl.startsWith("file://");
     }
 
-    public String getDiskPath(String imageUrl) {
+    public static String getDiskPath(String imageUrl) {
         if (isHttpUrl(imageUrl)) {
             return BSUtils.getCachePath(imageUrl);
         }
         if (isFileUrl(imageUrl)) {
             return imageUrl.substring(6);
         }
-        return null;
+        return imageUrl;
+    }
+
+    private static String getKey(String imageUrl) {
+        return getDiskPath(imageUrl);
     }
 
 }

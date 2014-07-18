@@ -2,17 +2,23 @@ package com.bstoneinfo.lib.view;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
 import com.bstoneinfo.lib.common.BSImageLoader;
+import com.bstoneinfo.lib.common.BSImageLoader.BSImageLoadStatus;
 import com.bstoneinfo.lib.common.BSImageLoader.BSImageLoaderListener;
+import com.bstoneinfo.lib.common.BSImageLoader.StatusChangedListener;
 import com.bstoneinfo.lib.net.BSHttpUrlConnectionQueue;
 
 public class BSImageView extends ImageView {
 
     private String url;
     private BSHttpUrlConnectionQueue connectionQueue;
+    private StatusChangedListener statusChangedListener;
+    private BSImageLoadStatus imageLoadStatus = BSImageLoadStatus.INIT;
+    private BSImageLoader imageLoader;
 
     public BSImageView(Context context) {
         super(context);
@@ -30,14 +36,52 @@ public class BSImageView extends ImageView {
         this.connectionQueue = connectionQueue;
     }
 
+    public void setStatusChangedListener(StatusChangedListener listener) {
+        statusChangedListener = listener;
+    }
+
+    public BSImageLoadStatus getImageLoadStatus() {
+        return imageLoadStatus;
+    }
+
+    public boolean isLoading() {
+        return imageLoadStatus == BSImageLoadStatus.LOCAL_LOADING || imageLoadStatus == BSImageLoadStatus.REMOTE_LOADING;
+    }
+
+    private void setImageLoadStatus(BSImageLoadStatus status) {
+        this.imageLoadStatus = status;
+        if (statusChangedListener != null) {
+            statusChangedListener.statusChanged(status);
+        }
+    }
+
     public void setUrl(String url) {
-        this.url = url;
-        BSImageLoader imageLoader = new BSImageLoader();
-        String localPath = imageLoader.getDiskPath(url);
-        Bitmap bitmap = imageLoader.getBitampFromMemoryCache("file://" + localPath);
+        String localPath = BSImageLoader.getDiskPath(url);
+        Bitmap bitmap = BSImageLoader.getBitampFromMemoryCache(localPath);
         if (bitmap != null) {
+            if (imageLoader != null) {
+                imageLoader.cancel();
+                imageLoader = null;
+            }
             setImageBitmap(bitmap);
+            setImageLoadStatus(BSImageLoadStatus.LOADED);
         } else {
+            if (imageLoader != null) {
+                if (imageLoader.isLoading()) {
+                    if (TextUtils.equals(this.url, url)) {
+                        return;
+                    }
+                    imageLoader.cancel();
+                }
+            }
+            imageLoader = new BSImageLoader();
+            imageLoader.setStatusChangedListener(new StatusChangedListener() {
+                @Override
+                public void statusChanged(BSImageLoadStatus status) {
+                    setImageLoadStatus(status);
+                }
+            });
+            //            imageLoader.setConnectionQueue(connectionQueue);
             imageLoader.loadImage(url, new BSImageLoaderListener() {
                 @Override
                 public void finished(Bitmap bitmap) {
@@ -50,6 +94,7 @@ public class BSImageView extends ImageView {
                 }
             });
         }
+        this.url = url;
     }
 
     @Override
