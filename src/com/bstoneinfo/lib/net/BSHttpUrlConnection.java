@@ -226,6 +226,9 @@ public class BSHttpUrlConnection {
                         }
                     }
 
+                    if (connectionQueue != null) {
+                        connectionQueue.runNext(BSHttpUrlConnection.this);
+                    }
                 }
             }.start();
         }
