@@ -64,15 +64,30 @@ public abstract class WaterFallViewController extends BSWaterFallViewController 
                         setPullupState(PullUpState.FINISHED);
                     } else {
                         setPullupState(PullUpState.NORMAL);
+                        int position = itemDataList.size();
                         itemDataList.addAll(dataList);
                         for (CategoryItemData itemData : dataList) {
                             final String remoteUrl = "http://" + MyUtils.getHost() + itemData.thumbURL;
                             final BSImageView imageView = new BSImageView(getContext());
                             imageView.setBackgroundColor(0xFFD0D0D0);
                             imageView.setConnectionQueue(connectionQueue);
-                            imageView.setScaleType(ScaleType.FIT_XY);
+                            imageView.setScaleType(ScaleType.FIT_CENTER);
                             imageView.setUrl(remoteUrl);
                             addView(imageView, columnWidth, columnWidth * itemData.thumbHeight / itemData.thumbWidth);
+                            //                            final int finalPosition = position;
+                            //                            imageView.setOnClickListener(new View.OnClickListener() {
+                            //                                @Override
+                            //                                public void onClick(View v) {
+                            //                                    BSImageLoadStatus status = imageView.getImageLoadStatus();
+                            //                                    if (status == BSImageLoadStatus.LOADED) {
+                            //                                        PhotoBrowseViewController photoBrowseViewController = new PhotoBrowseViewController(getContext(), itemDataList, finalPosition);
+                            //                                        presentModalViewController(photoBrowseViewController, AnimationType.None);
+                            //                                    } else if (status == BSImageLoadStatus.FAILED) {
+                            //                                        imageView.setUrl(remoteUrl);
+                            //                                    }
+                            //                                }
+                            //                            });
+                            position++;
                         }
                     }
                 }
