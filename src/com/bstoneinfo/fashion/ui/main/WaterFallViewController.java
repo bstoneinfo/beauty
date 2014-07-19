@@ -9,11 +9,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView.ScaleType;
 
-import com.bstoneinfo.fashion.app.MyUtils;
 import com.bstoneinfo.fashion.data.CategoryDataSource;
 import com.bstoneinfo.fashion.data.CategoryItemData;
 import com.bstoneinfo.fashion.data.CategoryManager;
+import com.bstoneinfo.fashion.ui.browse.PhotoBrowseViewController;
 import com.bstoneinfo.lib.common.BSApplication;
+import com.bstoneinfo.lib.common.BSImageLoader.BSImageLoadStatus;
 import com.bstoneinfo.lib.net.BSHttpUrlConnectionQueue;
 import com.bstoneinfo.lib.ui.BSActivity;
 import com.bstoneinfo.lib.ui.BSWaterFallViewController;
@@ -67,26 +68,26 @@ public abstract class WaterFallViewController extends BSWaterFallViewController 
                         int position = itemDataList.size();
                         itemDataList.addAll(dataList);
                         for (CategoryItemData itemData : dataList) {
-                            final String remoteUrl = "http://" + MyUtils.getHost() + itemData.thumbURL;
+                            final String remoteUrl = itemData.thumbURL;
                             final BSImageView imageView = new BSImageView(getContext());
                             imageView.setBackgroundColor(0xFFD0D0D0);
                             imageView.setConnectionQueue(connectionQueue);
                             imageView.setScaleType(ScaleType.FIT_CENTER);
                             imageView.setUrl(remoteUrl);
                             addView(imageView, columnWidth, columnWidth * itemData.thumbHeight / itemData.thumbWidth);
-                            //                            final int finalPosition = position;
-                            //                            imageView.setOnClickListener(new View.OnClickListener() {
-                            //                                @Override
-                            //                                public void onClick(View v) {
-                            //                                    BSImageLoadStatus status = imageView.getImageLoadStatus();
-                            //                                    if (status == BSImageLoadStatus.LOADED) {
-                            //                                        PhotoBrowseViewController photoBrowseViewController = new PhotoBrowseViewController(getContext(), itemDataList, finalPosition);
-                            //                                        presentModalViewController(photoBrowseViewController, AnimationType.None);
-                            //                                    } else if (status == BSImageLoadStatus.FAILED) {
-                            //                                        imageView.setUrl(remoteUrl);
-                            //                                    }
-                            //                                }
-                            //                            });
+                            final int finalPosition = position;
+                            imageView.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    BSImageLoadStatus status = imageView.getImageLoadStatus();
+                                    if (status == BSImageLoadStatus.LOADED) {
+                                        PhotoBrowseViewController photoBrowseViewController = new PhotoBrowseViewController(getContext(), itemDataList, finalPosition);
+                                        presentModalViewController(photoBrowseViewController, AnimationType.None);
+                                    } else if (status == BSImageLoadStatus.FAILED) {
+                                        imageView.setUrl(remoteUrl);
+                                    }
+                                }
+                            });
                             position++;
                         }
                     }

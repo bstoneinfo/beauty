@@ -99,13 +99,6 @@ public class BSImageLoader {
         return loadStatus == BSImageLoadStatus.LOCAL_LOADING || loadStatus == BSImageLoadStatus.REMOTE_LOADING;
     }
 
-    private void setImageLoadStatus(BSImageLoadStatus status) {
-        loadStatus = status;
-        if (statusChangedListener != null) {
-            statusChangedListener.statusChanged(status);
-        }
-    }
-
     public void setStatusChangedListener(StatusChangedListener statusChangedListener) {
         this.statusChangedListener = statusChangedListener;
     }
@@ -124,10 +117,16 @@ public class BSImageLoader {
         }
         final Handler handler = new Handler();
         if (new File(localPath).exists()) {
-            setImageLoadStatus(BSImageLoadStatus.LOCAL_LOADING);
+            loadStatus = BSImageLoadStatus.LOCAL_LOADING;
+            if (statusChangedListener != null) {
+                statusChangedListener.statusChanged(loadStatus);
+            }
             loadBitampFromLocalFile(handler, localPath, listener);
         } else if (isHttpUrl(imageUrl)) {
-            setImageLoadStatus(BSImageLoadStatus.REMOTE_LOADING);
+            loadStatus = BSImageLoadStatus.REMOTE_LOADING;
+            if (statusChangedListener != null) {
+                statusChangedListener.statusChanged(loadStatus);
+            }
             loadThread.run(new Runnable() {
                 @Override
                 public void run() {
@@ -156,7 +155,10 @@ public class BSImageLoader {
             connection.cancel();
         }
         connections.clear();
-        setImageLoadStatus(BSImageLoadStatus.CANCELED);
+        loadStatus = BSImageLoadStatus.CANCELED;
+        if (statusChangedListener != null) {
+            statusChangedListener.statusChanged(loadStatus);
+        }
     }
 
     public static Bitmap getBitampFromMemoryCache(String imageUrl) {
@@ -204,29 +206,35 @@ public class BSImageLoader {
 
     private void notifyFinished(Handler handler, final BSImageLoaderListener listener, final Bitmap bm) {
         if (isLoading()) {
-            setImageLoadStatus(BSImageLoadStatus.LOADED);
-            if (listener != null) {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
+            loadStatus = BSImageLoadStatus.LOADED;
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (statusChangedListener != null) {
+                        statusChangedListener.statusChanged(loadStatus);
+                    }
+                    if (listener != null) {
                         listener.finished(bm);
                     }
-                });
-            }
+                }
+            });
         }
     }
 
     private void notifyFailed(Handler handler, final BSImageLoaderListener listener, final Throwable e) {
         if (isLoading()) {
-            setImageLoadStatus(BSImageLoadStatus.FAILED);
-            if (listener != null) {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
+            loadStatus = BSImageLoadStatus.FAILED;
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (statusChangedListener != null) {
+                        statusChangedListener.statusChanged(loadStatus);
+                    }
+                    if (listener != null) {
                         listener.failed(e);
                     }
-                });
-            }
+                }
+            });
         }
     }
 

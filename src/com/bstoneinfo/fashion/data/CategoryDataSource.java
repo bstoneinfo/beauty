@@ -220,15 +220,16 @@ public class CategoryDataSource {
 
     private ArrayList<CategoryItemData> loadJsonData(final JSONObject jsonObject) {
         try {
+            String host = "http://" + MyUtils.getHost();
             ArrayList<CategoryItemData> dataList = new ArrayList<CategoryItemData>();
             JSONArray jsonArray = jsonObject.getJSONArray("data");
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonItem = jsonArray.getJSONObject(i);
                 CategoryItemData itemData = new CategoryItemData();
-                itemData.thumbURL = jsonItem.getString("thumb_url");
+                itemData.thumbURL = host + jsonItem.getString("thumb_url");
                 itemData.thumbWidth = jsonItem.getInt("thumb_width");
                 itemData.thumbHeight = jsonItem.getInt("thumb_height");
-                itemData.standardURL = jsonItem.getString("url");
+                itemData.standardURL = host + jsonItem.getString("url");
                 itemData.standardWidth = jsonItem.getInt("width");
                 itemData.standardHeight = jsonItem.getInt("height");
                 dataList.add(itemData);

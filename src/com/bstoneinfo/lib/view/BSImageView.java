@@ -10,6 +10,7 @@ import com.bstoneinfo.lib.common.BSImageLoader;
 import com.bstoneinfo.lib.common.BSImageLoader.BSImageLoadStatus;
 import com.bstoneinfo.lib.common.BSImageLoader.BSImageLoaderListener;
 import com.bstoneinfo.lib.common.BSImageLoader.StatusChangedListener;
+import com.bstoneinfo.lib.net.BSHttpUrlConnection.ProgressListener;
 import com.bstoneinfo.lib.net.BSHttpUrlConnectionQueue;
 
 public class BSImageView extends ImageView {
@@ -17,8 +18,10 @@ public class BSImageView extends ImageView {
     private String url;
     private BSHttpUrlConnectionQueue connectionQueue;
     private StatusChangedListener statusChangedListener;
+    private ProgressListener progressListener;
     private BSImageLoadStatus imageLoadStatus = BSImageLoadStatus.INIT;
     private BSImageLoader imageLoader;
+    private int defaultBitmapResource;
 
     public BSImageView(Context context) {
         super(context);
@@ -32,8 +35,16 @@ public class BSImageView extends ImageView {
         super(context, attrs, defStyle);
     }
 
+    public void setDefaultBitmapResource(int resID) {
+        defaultBitmapResource = resID;
+    }
+
     public void setConnectionQueue(BSHttpUrlConnectionQueue connectionQueue) {
         this.connectionQueue = connectionQueue;
+    }
+
+    public void setProgressListener(ProgressListener progressListener) {
+        this.progressListener = progressListener;
     }
 
     public void setStatusChangedListener(StatusChangedListener listener) {
@@ -55,6 +66,10 @@ public class BSImageView extends ImageView {
         }
     }
 
+    public String getUrl() {
+        return url;
+    }
+
     public void setUrl(String url) {
         String localPath = BSImageLoader.getDiskPath(url);
         Bitmap bitmap = BSImageLoader.getBitampFromMemoryCache(localPath);
@@ -74,6 +89,7 @@ public class BSImageView extends ImageView {
                     imageLoader.cancel();
                 }
             }
+            setImageResource(defaultBitmapResource);
             imageLoader = new BSImageLoader();
             imageLoader.setStatusChangedListener(new StatusChangedListener() {
                 @Override
@@ -81,6 +97,7 @@ public class BSImageView extends ImageView {
                     setImageLoadStatus(status);
                 }
             });
+            imageLoader.setProgressListener(progressListener);
             //            imageLoader.setConnectionQueue(connectionQueue);
             imageLoader.loadImage(url, new BSImageLoaderListener() {
                 @Override

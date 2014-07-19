@@ -44,6 +44,7 @@ public class BSHttpUrlConnection {
     private BSHttpUrlConnectionQueue connectionQueue;
     private BSHttpUrlConnectionListener conectionListener;
     private ProgressListener progressListener;
+    private Handler handler;
 
     public BSHttpUrlConnection(String url) {
         this.url = url;
@@ -78,6 +79,7 @@ public class BSHttpUrlConnection {
     }
 
     public void start(BSHttpUrlConnectionListener listener) {
+        handler = new Handler();
         if (connectionStatus == ConnectionStatus.Init) {
             if (connectionQueue != null) {
                 connectionQueue.add(this, listener);
@@ -92,7 +94,6 @@ public class BSHttpUrlConnection {
         if (connectionStatus != ConnectionStatus.Init) {
             return;
         }
-        final Handler handler = new Handler();
         this.conectionListener = new BSHttpUrlConnectionListener() {
 
             @Override
@@ -122,6 +123,17 @@ public class BSHttpUrlConnection {
             }
         };
         entityConnection.run(this);
+    }
+
+    private void notifyProgress(final int downloadedBytes, final int totalBytes) {
+        if (progressListener != null) {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    progressListener.progress(downloadedBytes, totalBytes);
+                }
+            });
+        }
     }
 
     private void run(BSHttpUrlConnection equalConnection) {
@@ -180,8 +192,8 @@ public class BSHttpUrlConnection {
 
                         int totalBytes = Integer.parseInt(urlConnection.getHeaderField("Content-Length"));
                         int readBytes = 0;
-                        if (progressListener != null) {
-                            progressListener.progress(readBytes, totalBytes);
+                        for (BSHttpUrlConnection connection : equalConnections) {
+                            connection.notifyProgress(readBytes, totalBytes);
                         }
                         int num = -1; //读入的字节数 
                         while (true) {
@@ -203,9 +215,10 @@ public class BSHttpUrlConnection {
                             bos.flush();
                             bos.write(buffer, 0, num);
                             readBytes += num;
-                            if (progressListener != null) {
-                                progressListener.progress(readBytes, totalBytes);
+                            for (BSHttpUrlConnection connection : equalConnections) {
+                                connection.notifyProgress(readBytes, totalBytes);
                             }
+                            sleep(1000);
                         }
                         bos.close();
                         bis.close();

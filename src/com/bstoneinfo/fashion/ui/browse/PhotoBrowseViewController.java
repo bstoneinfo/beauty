@@ -19,6 +19,7 @@ public class PhotoBrowseViewController extends BSViewController {
         super(context);
         getRootView().setBackgroundColor(Color.BLACK);
         pagerView = new BSPagerView(context);
+        pagerView.init(itemDataList);
         pagerView.setCreateCellDelegate(new CreateCellDelegate() {
             @Override
             public BSViewCell createCell() {
@@ -26,6 +27,7 @@ public class PhotoBrowseViewController extends BSViewController {
             }
         });
         getRootView().addView(pagerView);
+        pagerView.setCurrentItem(position);
     }
 
     @Override
