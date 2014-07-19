@@ -222,7 +222,7 @@ public class BSImageLoader {
     }
 
     private void notifyFailed(Handler handler, final BSImageLoaderListener listener, final Throwable e) {
-        if (isLoading()) {
+        if (loadStatus == BSImageLoadStatus.INIT || isLoading()) {
             loadStatus = BSImageLoadStatus.FAILED;
             handler.post(new Runnable() {
                 @Override

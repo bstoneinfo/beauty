@@ -15,11 +15,13 @@
         android:layout_centerInParent="true"
         android:visibility="gone" />
 
-    <com.bstoneinfo.lib.view.BSCircularProgressBar
+    <!--
+         <com.bstoneinfo.lib.view.BSCircularProgressBar
         android:id="@+id/circularBar"
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_centerInParent="true"
         android:visibility="gone" />
+    -->
 
 </RelativeLayout>

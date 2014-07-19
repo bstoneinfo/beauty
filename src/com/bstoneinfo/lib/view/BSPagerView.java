@@ -1,7 +1,5 @@
 package com.bstoneinfo.lib.view;
 
-import java.util.ArrayList;
-
 import android.content.Context;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -10,17 +8,13 @@ import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.bstoneinfo.lib.widget.BSCellAdapter;
 import com.bstoneinfo.lib.widget.BSViewCell;
 
 public class BSPagerView extends ViewPager {
 
-    public interface CreateCellDelegate {
-        BSViewCell createCell();
-    }
-
-    private ArrayList<?> dataList;
-    private ViewPagerAdapter adapter;
-    private CreateCellDelegate createCellDelegate;
+    private BSCellAdapter cellAdapter;
+    private ViewPagerAdapter viewPagerAdapter;
     private SparseArray<BSViewCell> cellArray = new SparseArray<BSViewCell>();
 
     public BSPagerView(Context context) {
@@ -31,22 +25,26 @@ public class BSPagerView extends ViewPager {
         super(context, attrs);
     }
 
-    public void init(ArrayList<?> dataList) {
-        this.dataList = dataList;
-        adapter = new ViewPagerAdapter();
-        setAdapter(adapter);
+    public void setAdapter(BSCellAdapter cellAdapter) {
+        this.cellAdapter = cellAdapter;
+        viewPagerAdapter = new ViewPagerAdapter();
+        setAdapter(viewPagerAdapter);
 
     }
 
-    public void setCreateCellDelegate(CreateCellDelegate createCellDelegate) {
-        this.createCellDelegate = createCellDelegate;
+    public void notifyDataSetChanged() {
+        viewPagerAdapter.notifyDataSetChanged();
+    }
+
+    public BSViewCell getCell(int position) {
+        return cellArray.get(position);
     }
 
     private class ViewPagerAdapter extends PagerAdapter {
 
         @Override
         public int getCount() {
-            return dataList.size();
+            return cellAdapter.getCount();
         }
 
         @Override
@@ -56,16 +54,13 @@ public class BSPagerView extends ViewPager {
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-            if (createCellDelegate == null) {
-                return null;
-            }
-            BSViewCell cell = createCellDelegate.createCell();
+            BSViewCell cell = cellAdapter.createCell();
             View view = null;
             if (cell != null) {
                 cellArray.put(position, cell);
                 view = cell.getRootView();
                 cell.position = position;
-                cell.loadContent(dataList.get(position));
+                cell.loadContent(cellAdapter.getData(position));
             }
             ViewPager viewPager = (ViewPager) container;
             viewPager.addView(view, 0);
@@ -75,8 +70,10 @@ public class BSPagerView extends ViewPager {
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
             BSViewCell cell = cellArray.get(position);
-            cell.destory();
-            cellArray.remove(position);
+            if (cell != null) {
+                cell.destory();
+                cellArray.remove(position);
+            }
             container.removeView((View) object);
         }
     }

@@ -509,6 +509,7 @@ public class BSViewController {
         presentingViewController.presentAnimationType = animationType;
         presentingViewController.parentViewController = getActivity().getMainViewController();
         presentingViewController.presentedViewController = this;
+        modalViewController.setNotificationCenter(notificationCenter);
         getActivity().addPresentViewController(presentingViewController);
         presentingViewController.viewDidLoad();
 

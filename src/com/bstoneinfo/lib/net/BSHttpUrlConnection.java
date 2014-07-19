@@ -218,7 +218,6 @@ public class BSHttpUrlConnection {
                             for (BSHttpUrlConnection connection : equalConnections) {
                                 connection.notifyProgress(readBytes, totalBytes);
                             }
-                            sleep(1000);
                         }
                         bos.close();
                         bis.close();

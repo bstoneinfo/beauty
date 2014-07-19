@@ -21,7 +21,6 @@ public class BSImageView extends ImageView {
     private ProgressListener progressListener;
     private BSImageLoadStatus imageLoadStatus = BSImageLoadStatus.INIT;
     private BSImageLoader imageLoader;
-    private int defaultBitmapResource;
 
     public BSImageView(Context context) {
         super(context);
@@ -33,10 +32,6 @@ public class BSImageView extends ImageView {
 
     public BSImageView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-    }
-
-    public void setDefaultBitmapResource(int resID) {
-        defaultBitmapResource = resID;
     }
 
     public void setConnectionQueue(BSHttpUrlConnectionQueue connectionQueue) {
@@ -89,7 +84,6 @@ public class BSImageView extends ImageView {
                     imageLoader.cancel();
                 }
             }
-            setImageResource(defaultBitmapResource);
             imageLoader = new BSImageLoader();
             imageLoader.setStatusChangedListener(new StatusChangedListener() {
                 @Override
@@ -107,7 +101,6 @@ public class BSImageView extends ImageView {
 
                 @Override
                 public void failed(Throwable throwable) {
-                    setImageBitmap(null);
                 }
             });
         }

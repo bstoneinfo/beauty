@@ -151,6 +151,11 @@ public class CategoryDataSource {
             }
             nextExploreGroup--;
         }
+
+        if (nextExploreGroup <= 0) {
+            notificationCenter.notifyOnUIThread(CATEGORY_EXPLORE_FINISHED + categoryName, new ArrayList<CategoryItemData>());
+        }
+
     }
 
     public void histroyMore() {
@@ -203,6 +208,9 @@ public class CategoryDataSource {
             return;
         }
         nextHistroyIndex--;
+        if (nextHistroyIndex <= 0) {
+            notificationCenter.notifyOnUIThread(CATEGORY_HISTORY_FINISHED + categoryName, new ArrayList<CategoryItemData>());
+        }
     }
 
     private ArrayList<CategoryItemData> loadJsonDataFromLocal(String relPath) {

@@ -10,7 +10,6 @@ import android.widget.ListView;
 import com.bstoneinfo.lib.view.BSListView.BSListViewImpl;
 import com.bstoneinfo.lib.view.BSListView.PullUpStates;
 import com.bstoneinfo.lib.view.BSListView.PullUpWillLoadListener;
-import com.bstoneinfo.lib.view.BSPagerView.CreateCellDelegate;
 import com.bstoneinfo.lib.widget.BSBaseAdapter;
 import com.bstoneinfo.lib.widget.BSGridAdapter;
 import com.bstoneinfo.lib.widget.BSViewCell;
@@ -19,7 +18,6 @@ public class BSGridView extends ListView {
 
     private BSListViewImpl impl;
     private BSBaseAdapter adapter;
-    private CreateCellDelegate createCellDelegate;
 
     public BSGridView(Context context) {
         super(context);
@@ -27,10 +25,6 @@ public class BSGridView extends ListView {
 
     public BSGridView(Context context, AttributeSet attrs) {
         super(context, attrs);
-    }
-
-    public void setCreateCellDelegate(CreateCellDelegate createCellDelegate) {
-        this.createCellDelegate = createCellDelegate;
     }
 
     public void init(ArrayList<?> dataList, int numColumns, int itemWidth, int itemHeight, int horzSpacing, int vertSpacing) {
@@ -52,7 +46,7 @@ public class BSGridView extends ListView {
         adapter = new BSGridAdapter(getContext(), dataList, numColumns, itemWidth, itemHeight, horzSpacing, vertSpacing) {
             @Override
             public BSViewCell createCell() {
-                return createCellDelegate.createCell();
+                return null;//createCellDelegate.createCell();
             }
         };
         setAdapter(adapter);
