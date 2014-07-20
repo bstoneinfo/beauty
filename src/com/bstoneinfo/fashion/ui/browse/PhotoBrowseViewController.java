@@ -7,6 +7,8 @@ import java.util.Observer;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.view.View;
+import android.view.View.OnClickListener;
 
 import com.bstoneinfo.fashion.data.CategoryItemData;
 import com.bstoneinfo.lib.ui.BSViewController;
@@ -20,6 +22,8 @@ public abstract class PhotoBrowseViewController extends BSViewController {
     final private String dataEventName;
     final private ArrayList<CategoryItemData> itemDataList;
     private int position;
+    private boolean bEnded = false;
+    private boolean bLoadmoreFailed = false;
 
     public PhotoBrowseViewController(Context context, ArrayList<CategoryItemData> itemDataList, int position, String dataEventName) {
         super(context);
@@ -34,23 +38,30 @@ public abstract class PhotoBrowseViewController extends BSViewController {
     protected void viewDidLoad() {
         super.viewDidLoad();
 
-        pagerView.setAdapter(new BSCellAdapter() {
+        final BSCellAdapter adapter = new BSCellAdapter() {
 
             @Override
             public Object getData(int position) {
-                return position >= itemDataList.size() ? null : itemDataList.get(position);
+                if (position < itemDataList.size()) {
+                    return itemDataList.get(position);
+                }
+                if (bLoadmoreFailed) {
+                    return new CategoryItemData();
+                }
+                return null;
             }
 
             @Override
             public int getCount() {
-                return itemDataList.size() + 1;
+                return itemDataList.size() + (bEnded ? 0 : 1);
             }
 
             @Override
             public BSViewCell createCell() {
                 return new PhotoBrowseViewCell(getContext());
             }
-        });
+        };
+        pagerView.setAdapter(adapter);
         getRootView().addView(pagerView);
 
         pagerView.setCurrentItem(position);
@@ -74,12 +85,31 @@ public abstract class PhotoBrowseViewController extends BSViewController {
         addNotificationObserver(dataEventName, new Observer() {
             @Override
             public void update(Observable observable, Object data) {
-                int loadmorePosition = itemDataList.size();
-                BSViewCell lastCell = pagerView.getCell(loadmorePosition);
+                final int loadmorePosition = itemDataList.size();
+                final PhotoBrowseViewCell lastCell = (PhotoBrowseViewCell) pagerView.getCell(loadmorePosition);
                 ArrayList<CategoryItemData> dataList = (ArrayList<CategoryItemData>) data;
-                itemDataList.addAll(dataList);
+                if (dataList == null) {
+                    bLoadmoreFailed = true;
+                    lastCell.refreshView.setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            bLoadmoreFailed = false;
+                            loadMore();
+                            if (lastCell != null) {
+                                lastCell.loadContent(adapter.getData(loadmorePosition));
+                            }
+                        }
+                    });
+                } else {
+                    bLoadmoreFailed = false;
+                    if (dataList.isEmpty()) {
+                        bEnded = true;
+                    } else {
+                        itemDataList.addAll(dataList);
+                    }
+                }
                 if (lastCell != null) {
-                    lastCell.loadContent(itemDataList.get(loadmorePosition));
+                    lastCell.loadContent(adapter.getData(loadmorePosition));
                 }
                 pagerView.notifyDataSetChanged();
             }
