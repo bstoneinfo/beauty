@@ -15,10 +15,12 @@ import com.bstoneinfo.fashion.data.CategoryManager;
 import com.bstoneinfo.fashion.ui.browse.PhotoBrowseViewController;
 import com.bstoneinfo.lib.common.BSApplication;
 import com.bstoneinfo.lib.common.BSImageLoader.BSImageLoadStatus;
+import com.bstoneinfo.lib.common.BSNotificationCenter.BSNotificationEvent;
 import com.bstoneinfo.lib.net.BSHttpUrlConnectionQueue;
 import com.bstoneinfo.lib.ui.BSActivity;
 import com.bstoneinfo.lib.ui.BSWaterFallViewController;
 import com.bstoneinfo.lib.view.BSImageView;
+import com.bstoneinfo.lib.view.BSScrollView.OnScrollChangedListener;
 
 import custom.R;
 
@@ -30,6 +32,8 @@ public abstract class WaterFallViewController extends BSWaterFallViewController 
 
     private final BSHttpUrlConnectionQueue connectionQueue = new BSHttpUrlConnectionQueue(10);
     private final ArrayList<CategoryItemData> itemDataList = new ArrayList<CategoryItemData>();
+    private final ArrayList<BSImageView> imageViewList = new ArrayList<BSImageView>();
+    private boolean memoryWaringReceived = false;
 
     protected final String categoryName;
 
@@ -112,5 +116,74 @@ public abstract class WaterFallViewController extends BSWaterFallViewController 
         super.viewDidLoad();
         loadMore();
         setPullupState(PullUpState.LOADING);
+        getScrollView().setOnScrollChangedListener(new OnScrollChangedListener() {
+            @Override
+            public void onScrollChanged(int l, int t, int oldl, int oldt) {
+                if (t != oldt) {
+                    checkVisible();
+                }
+            }
+        });
+        BSApplication.defaultNotificationCenter.addObserver(this, BSNotificationEvent.LOW_MEMORY_WARNING, new Observer() {
+            @Override
+            public void update(Observable observable, Object data) {
+                memoryWaringReceived = true;
+                checkVisible();
+            }
+        });
+    }
+
+    @Override
+    protected void viewWillAppear() {
+        super.viewWillAppear();
+        checkVisible();
+    }
+
+    @Override
+    protected void viewWillDisappear() {
+        super.viewWillDisappear();
+        checkVisible();
+    }
+
+    private void checkVisible() {
+        if (getViewStatus() == ViewStatus.Appearing || getViewStatus() == ViewStatus.Appeared) {
+            int y1 = getScrollView().getScrollY();
+            int y2 = y1 + getRootView().getHeight();
+            for (BSImageView imageView : imageViewList) {
+                int top = imageView.getTop();
+                int bottom = imageView.getBottom();
+                if (bottom >= y1 && top <= y2) {
+                    if (memoryWaringReceived) {
+                        setImageViewVisible(imageView, true);
+                    } else if (imageView.getImageLoadStatus() == BSImageLoadStatus.FAILED) {
+                        imageView.setUrl(imageView.getUrl());
+                    }
+                } else {
+                    if (memoryWaringReceived) {
+                        setImageViewVisible(imageView, false);
+                    }
+                }
+            }
+        } else {
+            if (memoryWaringReceived) {
+                for (BSImageView imageView : imageViewList) {
+                    setImageViewVisible(imageView, false);
+                }
+            }
+        }
+    }
+
+    private void setImageViewVisible(BSImageView imageView, boolean bVisible) {
+        imageView.setVisible(bVisible);
+    }
+
+    @Override
+    public void addView(View childView, int width, int height) {
+        BSImageView imageView = (BSImageView) childView;
+        imageViewList.add(imageView);
+        if (memoryWaringReceived) {
+            setImageViewVisible(imageView, getViewStatus() == ViewStatus.Appearing || getViewStatus() == ViewStatus.Appeared);
+        }
+        super.addView(childView, width, height);
     }
 }

@@ -190,7 +190,11 @@ public class BSHttpUrlConnection {
                         BufferedOutputStream bos = new BufferedOutputStream(os);
                         byte[] buffer = new byte[1024 * 16]; //创建存放输入流的缓冲 
 
-                        int totalBytes = Integer.parseInt(urlConnection.getHeaderField("Content-Length"));
+                        int totalBytes = 0;
+                        try {
+                            totalBytes = Integer.parseInt(urlConnection.getHeaderField("Content-Length"));
+                        } catch (Exception e) {
+                        }
                         int readBytes = 0;
                         for (BSHttpUrlConnection connection : equalConnections) {
                             connection.notifyProgress(readBytes, totalBytes);

@@ -21,6 +21,7 @@ public class BSImageView extends ImageView {
     private ProgressListener progressListener;
     private BSImageLoadStatus imageLoadStatus = BSImageLoadStatus.INIT;
     private BSImageLoader imageLoader;
+    private boolean bVisible = true;
 
     public BSImageView(Context context) {
         super(context);
@@ -66,50 +67,62 @@ public class BSImageView extends ImageView {
     }
 
     public void setUrl(String url) {
-        String localPath = BSImageLoader.getDiskPath(url);
-        Bitmap bitmap = BSImageLoader.getBitampFromMemoryCache(localPath);
-        if (bitmap != null) {
-            if (imageLoader != null) {
-                imageLoader.cancel();
-                imageLoader = null;
-            }
-            setImageBitmap(bitmap);
-            setImageLoadStatus(BSImageLoadStatus.LOADED);
-        } else {
-            if (imageLoader != null) {
-                if (imageLoader.isLoading()) {
-                    if (TextUtils.equals(this.url, url)) {
-                        return;
-                    }
+        if (bVisible) {
+            String localPath = BSImageLoader.getDiskPath(url);
+            Bitmap bitmap = BSImageLoader.getBitampFromMemoryCache(localPath);
+            if (bitmap != null) {
+                if (imageLoader != null) {
                     imageLoader.cancel();
+                    imageLoader = null;
                 }
-            }
-            imageLoader = new BSImageLoader();
-            imageLoader.setStatusChangedListener(new StatusChangedListener() {
-                @Override
-                public void statusChanged(BSImageLoadStatus status) {
-                    setImageLoadStatus(status);
+                setImageBitmap(bitmap);
+                setImageLoadStatus(BSImageLoadStatus.LOADED);
+            } else {
+                if (imageLoader != null) {
+                    if (imageLoader.isLoading()) {
+                        if (TextUtils.equals(this.url, url)) {
+                            return;
+                        }
+                        imageLoader.cancel();
+                    }
                 }
-            });
-            imageLoader.setProgressListener(progressListener);
-            //            imageLoader.setConnectionQueue(connectionQueue);
-            imageLoader.loadImage(url, new BSImageLoaderListener() {
-                @Override
-                public void finished(Bitmap bitmap) {
-                    setImageBitmap(bitmap);
-                }
+                imageLoader = new BSImageLoader();
+                imageLoader.setStatusChangedListener(new StatusChangedListener() {
+                    @Override
+                    public void statusChanged(BSImageLoadStatus status) {
+                        setImageLoadStatus(status);
+                    }
+                });
+                imageLoader.setProgressListener(progressListener);
+                //            imageLoader.setConnectionQueue(connectionQueue);
+                imageLoader.loadImage(url, new BSImageLoaderListener() {
+                    @Override
+                    public void finished(Bitmap bitmap) {
+                        setImageBitmap(bitmap);
+                    }
 
-                @Override
-                public void failed(Throwable throwable) {
-                }
-            });
+                    @Override
+                    public void failed(Throwable throwable) {
+                    }
+                });
+            }
         }
         this.url = url;
     }
 
-    @Override
-    public void setImageBitmap(Bitmap bm) {
-        super.setImageBitmap(bm);
+    public void setVisible(boolean bVisible) {
+        if (this.bVisible == bVisible) {
+            return;
+        }
+        this.bVisible = bVisible;
+        if (!bVisible) {
+            if (imageLoader != null) {
+                imageLoader.cancel();
+                imageLoader = null;
+            }
+            setImageBitmap(null);
+        } else {
+            setUrl(url);
+        }
     }
-
 }

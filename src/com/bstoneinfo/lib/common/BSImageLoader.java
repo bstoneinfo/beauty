@@ -10,9 +10,11 @@ import java.util.ArrayList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.util.LruCache;
 import android.text.TextUtils;
 
+import com.bstoneinfo.lib.common.BSNotificationCenter.BSNotificationEvent;
 import com.bstoneinfo.lib.net.BSHttpUrlConnection;
 import com.bstoneinfo.lib.net.BSHttpUrlConnection.ProgressListener;
 import com.bstoneinfo.lib.net.BSHttpUrlConnectionQueue;
@@ -46,13 +48,19 @@ public class BSImageLoader {
     private ProgressListener progressListener;
     private BSImageLoadStatus loadStatus = BSImageLoadStatus.INIT;
 
+    //    public static char[] tmpMemory;
+
     static {
-        int percent = BSApplication.getApplication().getRemoteConfig().optInt("ImageCachePercent", 15);
+        int percent = BSApplication.getApplication().getRemoteConfig().optInt("ImageCachePercent", 30);
         if (percent <= 0) {
             imageCache = null;
         } else {
-            int memorySize = Math.round(Runtime.getRuntime().maxMemory() / 1024 * percent / 100);
-            imageCache = new LruCache<String, Bitmap>(memorySize) {
+            long memorySize = Runtime.getRuntime().maxMemory();
+            BSLog.d("Memory Size: " + memorySize / 1024 + "K");
+            //            int testMemSize = 32 * 1024 * 1024;
+            //            tmpMemory = new char[(int) ((memorySize - testMemSize) / 2)];
+            //            memorySize = testMemSize;
+            imageCache = new LruCache<String, Bitmap>((int) memorySize / 1024 * percent / 100) {
 
                 @Override
                 protected int sizeOf(String key, Bitmap bitmap) {
@@ -171,8 +179,10 @@ public class BSImageLoader {
     }
 
     private void addBitampToMemoryCache(String imageUrl, Bitmap bitmap) {
-        synchronized (imageCache) {
-            imageCache.put(getKey(imageUrl), bitmap);
+        if (imageCache != null) {
+            synchronized (imageCache) {
+                imageCache.put(getKey(imageUrl), bitmap);
+            }
         }
     }
 
@@ -186,17 +196,47 @@ public class BSImageLoader {
                 InputStream stream = null;
                 try {
                     stream = new FileInputStream(localPath);
-                    Bitmap bitmap = BitmapFactory.decodeStream(stream, null, null);
-                    addBitampToMemoryCache("file://" + localPath, bitmap);
-                    notifyFinished(handler, listener, bitmap);
-                } catch (final Throwable e) {
-                    notifyFailed(handler, listener, e);
-                } finally {
-                    if (stream != null) {
+                } catch (FileNotFoundException e) {
+                }
+                if (stream != null) {
+                    try {
+                        Bitmap bitmap = BitmapFactory.decodeStream(stream, null, null);
+                        addBitampToMemoryCache("file://" + localPath, bitmap);
+                        notifyFinished(handler, listener, bitmap);
+                    } catch (Throwable e) {
+                        if (e instanceof OutOfMemoryError) {
+                            clearMemoryCache();
+                            final Object lock = new Object();
+                            synchronized (lock) {
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        BSApplication.defaultNotificationCenter.notifyOnUIThread(BSNotificationEvent.LOW_MEMORY_WARNING);
+                                        synchronized (lock) {
+                                            lock.notify();
+                                        }
+                                    }
+                                });
+                                try {
+                                    lock.wait();
+                                } catch (InterruptedException e1) {
+                                    e1.printStackTrace();
+                                }
+                            }
+                            try {
+                                Bitmap bitmap = BitmapFactory.decodeStream(stream, null, null);
+                                addBitampToMemoryCache("file://" + localPath, bitmap);
+                                notifyFinished(handler, listener, bitmap);
+                            } catch (Throwable t) {
+                                notifyFailed(handler, listener, t);
+                            }
+                        } else {
+                            notifyFailed(handler, listener, e);
+                        }
+                    } finally {
                         try {
                             stream.close();
                         } catch (IOException e) {
-                            // do nothing here
                         }
                     }
                 }
@@ -204,7 +244,7 @@ public class BSImageLoader {
         });
     }
 
-    private void notifyFinished(Handler handler, final BSImageLoaderListener listener, final Bitmap bm) {
+    private void notifyFinished(Handler handler, final BSImageLoaderListener listener, final Bitmap bitmap) {
         if (isLoading()) {
             loadStatus = BSImageLoadStatus.LOADED;
             handler.post(new Runnable() {
@@ -214,7 +254,7 @@ public class BSImageLoader {
                         statusChangedListener.statusChanged(loadStatus);
                     }
                     if (listener != null) {
-                        listener.finished(bm);
+                        listener.finished(bitmap);
                     }
                 }
             });
