@@ -118,6 +118,12 @@ public class BSUtils {
             return null;
         }
         String folder = getCacheFolder();
+        if (key.startsWith("http://")) {
+            key = key.substring(7);
+        } else if (key.startsWith("https://")) {
+            key = key.substring(8);
+        }
+        key = key.substring(key.indexOf('/'));
         String name = getMD5(key);
         return folder + name;
     }
