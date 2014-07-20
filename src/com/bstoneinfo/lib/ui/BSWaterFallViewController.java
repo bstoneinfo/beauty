@@ -84,6 +84,10 @@ public class BSWaterFallViewController extends BSViewController {
         }
     }
 
+    public PullUpState getPullUpState() {
+        return pullUpState;
+    }
+
     public void setFooterView(View footerView, View normalStatusView, View loadingStatusView, View failedStatusView, View finishedStatusView) {
         this.footerView = footerView;
         footerNormalView = normalStatusView;

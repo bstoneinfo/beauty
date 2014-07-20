@@ -85,8 +85,8 @@ public abstract class WaterFallViewController extends BSWaterFallViewController 
                                 public void onClick(View v) {
                                     BSImageLoadStatus status = imageView.getImageLoadStatus();
                                     if (status == BSImageLoadStatus.LOADED) {
-                                        PhotoBrowseViewController photoBrowseViewController = new PhotoBrowseViewController(getContext(), itemDataList, finalPosition,
-                                                dataEventName) {
+                                        PhotoBrowseViewController photoBrowseViewController = new PhotoBrowseViewController(getContext(), itemDataList, dataEventName,
+                                                finalPosition, getPullUpState() == PullUpState.FINISHED) {
                                             @Override
                                             protected void loadMore() {
                                                 WaterFallViewController.this.loadMore();

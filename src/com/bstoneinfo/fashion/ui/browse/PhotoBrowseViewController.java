@@ -22,14 +22,15 @@ public abstract class PhotoBrowseViewController extends BSViewController {
     final private String dataEventName;
     final private ArrayList<CategoryItemData> itemDataList;
     private int position;
-    private boolean bEnded = false;
+    private boolean bLoadmoreEnded = false;
     private boolean bLoadmoreFailed = false;
 
-    public PhotoBrowseViewController(Context context, ArrayList<CategoryItemData> itemDataList, int position, String dataEventName) {
+    public PhotoBrowseViewController(Context context, ArrayList<CategoryItemData> itemDataList, String dataEventName, int position, boolean loadmoreEnded) {
         super(context);
         this.dataEventName = dataEventName;
         this.position = position;
         this.itemDataList = (ArrayList<CategoryItemData>) itemDataList.clone();
+        bLoadmoreEnded = loadmoreEnded;
         getRootView().setBackgroundColor(Color.BLACK);
         pagerView = new BSPagerView(getContext());
     }
@@ -53,7 +54,7 @@ public abstract class PhotoBrowseViewController extends BSViewController {
 
             @Override
             public int getCount() {
-                return itemDataList.size() + (bEnded ? 0 : 1);
+                return itemDataList.size() + (bLoadmoreEnded ? 0 : 1);
             }
 
             @Override
@@ -103,7 +104,7 @@ public abstract class PhotoBrowseViewController extends BSViewController {
                 } else {
                     bLoadmoreFailed = false;
                     if (dataList.isEmpty()) {
-                        bEnded = true;
+                        bLoadmoreEnded = true;
                     } else {
                         itemDataList.addAll(dataList);
                     }
