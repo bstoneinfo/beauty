@@ -12,25 +12,25 @@ import com.bstoneinfo.lib.ui.BSViewController;
 
 import custom.R;
 
-public abstract class CategoriesViewController extends BSViewController {
+public class CategoryViewController extends BSViewController {
 
-    public CategoriesViewController(Context context) {
+    protected final String categoryName;
+
+    public CategoryViewController(Context context, String categoryName) {
         super(context);
+        this.categoryName = categoryName;
     }
-
-    abstract WaterFallViewController createChildViewController(String categoryName);
 
     @Override
     protected void viewDidLoad() {
         super.viewDidLoad();
-
         ArrayList<String> titles = new ArrayList<String>();
-        titles.add(getContext().getString(R.string.tab_51));
-        titles.add(getContext().getString(R.string.tab_52));
+        titles.add(getContext().getString(R.string.tab_explore));
+        titles.add(getContext().getString(R.string.tab_history));
 
         ArrayList<BSViewController> childViewControllers = new ArrayList<BSViewController>();
-        childViewControllers.add(createChildViewController("51"));
-        childViewControllers.add(createChildViewController("52"));
+        childViewControllers.add(new ExploreWaterFallViewController(getContext(), categoryName));
+        childViewControllers.add(new HistroyWaterFallViewController(getContext(), categoryName));
 
         BSPagerBarViewController pagerViewController = new BSPagerBarViewController(getContext(), childViewControllers, titles);
         pagerViewController.setAllCaps(false);
@@ -55,4 +55,5 @@ public abstract class CategoriesViewController extends BSViewController {
         });
         addChildViewController(pagerViewController);
     }
+
 }

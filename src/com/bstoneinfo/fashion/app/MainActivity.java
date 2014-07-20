@@ -5,9 +5,8 @@ import java.util.ArrayList;
 import android.os.Bundle;
 
 import com.bstoneinfo.fashion.data.CategoryManager;
-import com.bstoneinfo.fashion.ui.main.ExploreViewController;
+import com.bstoneinfo.fashion.ui.main.CategoryViewController;
 import com.bstoneinfo.fashion.ui.main.FavoriteViewController;
-import com.bstoneinfo.fashion.ui.main.HistroyViewController;
 import com.bstoneinfo.fashion.ui.main.SettingsViewController;
 import com.bstoneinfo.lib.ui.BSActivity;
 import com.bstoneinfo.lib.ui.BSTabBarController;
@@ -21,14 +20,14 @@ public class MainActivity extends BSActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ExploreViewController exploreViewController = new ExploreViewController(this);
-        HistroyViewController histroyViewController = new HistroyViewController(this);
+        CategoryViewController category51ViewController = new CategoryViewController(this, "51");
+        CategoryViewController category52ViewController = new CategoryViewController(this, "52");
         FavoriteViewController favoriteViewController = new FavoriteViewController(this);
         SettingsViewController settingsViewController = new SettingsViewController(this);
 
         ArrayList<BSViewController> childViewControllers = new ArrayList<BSViewController>();
-        childViewControllers.add(exploreViewController);
-        childViewControllers.add(histroyViewController);
+        childViewControllers.add(category51ViewController);
+        childViewControllers.add(category52ViewController);
         childViewControllers.add(favoriteViewController);
         childViewControllers.add(settingsViewController);
 
