@@ -28,6 +28,7 @@ public class CategoryDataSource {
     private final BSNotificationCenter notificationCenter;
 
     private JSONArray histroyJsonArray;
+    private final int[] histroyGroupArray;
     private int nextHistroyIndex = 0;
     private int nextExploreGroup = -1;
     private BSJsonConnection exploreJsonConnection;
@@ -50,9 +51,20 @@ public class CategoryDataSource {
         } catch (Exception e) {
             histroyJsonArray = new JSONArray();
         }
-        nextHistroyIndex = histroyJsonArray.length() - 2;
+        if (histroyJsonArray.length() > 1) {
+            histroyGroupArray = new int[histroyJsonArray.length() - 1];
+            for (int i = 0; i < histroyJsonArray.length() - 1; i++) {
+                histroyGroupArray[i] = histroyJsonArray.optInt(histroyJsonArray.length() - i - 2);
+            }
+        } else {
+            histroyGroupArray = null;
+        }
+        nextHistroyIndex = 0;
         try {
             nextExploreGroup = histroyJsonArray.getInt(histroyJsonArray.length() - 1);
+            if (nextExploreGroup <= 0) {
+                nextExploreGroup = groupSize;
+            }
         } catch (Exception e) {
             nextExploreGroup = groupSize;
         }
@@ -130,32 +142,32 @@ public class CategoryDataSource {
             }
         }
         histroyJsonArray = newHistroyJsonArray;
-        if (histroyJsonArray.length() > 0 && nextExploreGroup == histroyJsonArray.optInt(histroyJsonArray.length() - 1)) {
-            nextExploreGroup = groupSize;//是历史项的第一个，下一个从头开始读
-        } else {
-            histroyJsonArray.put(nextExploreGroup);
-            nextExploreGroup--;
-        }
+        histroyJsonArray.put(nextExploreGroup);
         getPreferences().edit().putString("histroy", histroyJsonArray.toString()).commit();
 
         //计算下一个nextExploreGroup
-        while (nextExploreGroup > 0) {
-            int i = 0;
-            for (; i < histroyJsonArray.length(); i++) {
-                if (histroyJsonArray.optInt(i) == nextExploreGroup) {
+        nextExploreGroup--;
+        if (nextExploreGroup == 0) {
+            nextExploreGroup = groupSize;
+        }
+        //以下代码是为了找到下一个未看到过的页
+        if (histroyGroupArray != null) {
+            int newNextGroup = nextExploreGroup;
+            while (newNextGroup > 0) {
+                boolean bFound = false;
+                for (int group : histroyGroupArray) {
+                    if (group == newNextGroup) {
+                        bFound = true;
+                        break;
+                    }
+                }
+                if (!bFound) {
+                    nextExploreGroup = newNextGroup;
                     break;
                 }
+                newNextGroup--;
             }
-            if (i == histroyJsonArray.length()) {
-                break;
-            }
-            nextExploreGroup--;
         }
-
-        if (nextExploreGroup <= 0) {
-            notificationCenter.notifyOnUIThread(CATEGORY_EXPLORE_FINISHED + categoryName, new ArrayList<CategoryItemData>());
-        }
-
     }
 
     public void histroyMore() {
@@ -164,11 +176,13 @@ public class CategoryDataSource {
         }
         isLoadingHistroy = true;
         BSLog.d("nextHistroyIndex=" + nextHistroyIndex);
-        final String relativePath = "/fashion/" + categoryName + "/v2/" + histroyJsonArray.optInt(nextHistroyIndex) + ".json";
+        final String relativePath;
         final ArrayList<CategoryItemData> dataList;
-        if (nextHistroyIndex <= 0) {
+        if (nextHistroyIndex < 0 || histroyGroupArray == null || nextHistroyIndex >= histroyGroupArray.length) {
+            relativePath = "";
             dataList = new ArrayList<CategoryItemData>();
         } else {
+            relativePath = "/fashion/" + categoryName + "/v2/" + histroyGroupArray[nextHistroyIndex] + ".json";
             dataList = loadJsonDataFromLocal(relativePath);
         }
         if (dataList != null) {
@@ -204,11 +218,11 @@ public class CategoryDataSource {
     private void notifyHistroyFinished(ArrayList<CategoryItemData> dataList) {
         notificationCenter.notifyOnUIThread(CATEGORY_HISTORY_FINISHED + categoryName, dataList);
         isLoadingHistroy = false;
-        if (dataList == null) {
+        if (dataList == null || dataList.isEmpty()) {
             return;
         }
-        nextHistroyIndex--;
-        if (nextHistroyIndex <= 0) {
+        nextHistroyIndex++;
+        if (nextHistroyIndex >= histroyGroupArray.length) {
             notificationCenter.notifyOnUIThread(CATEGORY_HISTORY_FINISHED + categoryName, new ArrayList<CategoryItemData>());
         }
     }
