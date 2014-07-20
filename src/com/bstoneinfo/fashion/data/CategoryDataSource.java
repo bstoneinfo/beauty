@@ -154,14 +154,13 @@ public class CategoryDataSource {
         if (histroyGroupArray != null) {
             int newNextGroup = nextExploreGroup;
             while (newNextGroup > 0) {
-                boolean bFound = false;
-                for (int group : histroyGroupArray) {
-                    if (group == newNextGroup) {
-                        bFound = true;
+                int i = 0;
+                for (; i < histroyJsonArray.length(); i++) {
+                    if (histroyJsonArray.optInt(i) == nextExploreGroup) {
                         break;
                     }
                 }
-                if (!bFound) {
+                if (i == histroyJsonArray.length()) {
                     nextExploreGroup = newNextGroup;
                     break;
                 }
