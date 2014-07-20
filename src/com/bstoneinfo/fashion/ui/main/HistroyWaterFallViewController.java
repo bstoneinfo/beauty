@@ -1,4 +1,4 @@
-package com.bstoneinfo.fashion.ui;
+package com.bstoneinfo.fashion.ui.main;
 
 import android.content.Context;
 
@@ -12,6 +12,7 @@ public class HistroyWaterFallViewController extends WaterFallViewController {
 
     @Override
     protected void loadMore() {
+        getDataSource().histroyMore();
     }
 
 }

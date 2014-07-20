@@ -31,6 +31,10 @@ public class BSHttpUrlConnection {
         void failed(Exception exception);
     }
 
+    public interface ProgressListener {
+        void progress(int downloadedBytes, int totalBytes);
+    }
+
     protected final String url;
     private ConnectionStatus connectionStatus = ConnectionStatus.Init;
     private ConnectionMethod requestMethod = ConnectionMethod.GET;
@@ -38,7 +42,9 @@ public class BSHttpUrlConnection {
     private final HashMap<String, String> properties = new HashMap<String, String>();
     private final ArrayList<BSHttpUrlConnection> equalConnections = new ArrayList<BSHttpUrlConnection>();
     private BSHttpUrlConnectionQueue connectionQueue;
-    BSHttpUrlConnectionListener listener;
+    private BSHttpUrlConnectionListener conectionListener;
+    private ProgressListener progressListener;
+    private Handler handler;
 
     public BSHttpUrlConnection(String url) {
         this.url = url;
@@ -68,7 +74,12 @@ public class BSHttpUrlConnection {
         connectionQueue = queue;
     }
 
+    public void setProgressListener(ProgressListener progressListener) {
+        this.progressListener = progressListener;
+    }
+
     public void start(BSHttpUrlConnectionListener listener) {
+        handler = new Handler();
         if (connectionStatus == ConnectionStatus.Init) {
             if (connectionQueue != null) {
                 connectionQueue.add(this, listener);
@@ -83,8 +94,7 @@ public class BSHttpUrlConnection {
         if (connectionStatus != ConnectionStatus.Init) {
             return;
         }
-        final Handler handler = new Handler();
-        this.listener = new BSHttpUrlConnectionListener() {
+        this.conectionListener = new BSHttpUrlConnectionListener() {
 
             @Override
             public void finished(final byte[] response) {
@@ -113,6 +123,17 @@ public class BSHttpUrlConnection {
             }
         };
         entityConnection.run(this);
+    }
+
+    private void notifyProgress(final int downloadedBytes, final int totalBytes) {
+        if (progressListener != null) {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    progressListener.progress(downloadedBytes, totalBytes);
+                }
+            });
+        }
     }
 
     private void run(BSHttpUrlConnection equalConnection) {
@@ -167,7 +188,17 @@ public class BSHttpUrlConnection {
                         final ByteArrayOutputStream os = new ByteArrayOutputStream();
                         BufferedInputStream bis = new BufferedInputStream(urlConnection.getInputStream());
                         BufferedOutputStream bos = new BufferedOutputStream(os);
-                        byte[] buffer = new byte[1024]; //创建存放输入流的缓冲 
+                        byte[] buffer = new byte[1024 * 16]; //创建存放输入流的缓冲 
+
+                        int totalBytes = 0;
+                        try {
+                            totalBytes = Integer.parseInt(urlConnection.getHeaderField("Content-Length"));
+                        } catch (Exception e) {
+                        }
+                        int readBytes = 0;
+                        for (BSHttpUrlConnection connection : equalConnections) {
+                            connection.notifyProgress(readBytes, totalBytes);
+                        }
                         int num = -1; //读入的字节数 
                         while (true) {
                             boolean bAllCanceled = true;
@@ -180,25 +211,29 @@ public class BSHttpUrlConnection {
                             if (bAllCanceled) {
                                 break;
                             }
-                            num = bis.read(buffer); // 读入到缓冲区 
+                            num = bis.read(buffer); // 读入到缓冲区
                             if (num == -1) {
                                 bos.flush();
                                 break; //已经读完 
                             }
                             bos.flush();
                             bos.write(buffer, 0, num);
+                            readBytes += num;
+                            for (BSHttpUrlConnection connection : equalConnections) {
+                                connection.notifyProgress(readBytes, totalBytes);
+                            }
                         }
                         bos.close();
                         bis.close();
                         for (BSHttpUrlConnection connection : equalConnections) {
-                            if (connection.listener != null) {
-                                connection.listener.finished(os.toByteArray());
+                            if (connection.conectionListener != null) {
+                                connection.conectionListener.finished(os.toByteArray());
                             }
                         }
                     } catch (final Exception e) {
                         for (BSHttpUrlConnection connection : equalConnections) {
-                            if (connection.listener != null) {
-                                connection.listener.failed(e);
+                            if (connection.conectionListener != null) {
+                                connection.conectionListener.failed(e);
                             }
                         }
                     } finally {
@@ -207,6 +242,9 @@ public class BSHttpUrlConnection {
                         }
                     }
 
+                    if (connectionQueue != null) {
+                        connectionQueue.runNext(BSHttpUrlConnection.this);
+                    }
                 }
             }.start();
         }

@@ -14,11 +14,10 @@ import com.bstoneinfo.lib.widget.BSBaseAdapter;
 import com.bstoneinfo.lib.widget.BSGridAdapter;
 import com.bstoneinfo.lib.widget.BSViewCell;
 
-public abstract class BSGridView extends ListView {
+public class BSGridView extends ListView {
+
     private BSListViewImpl impl;
     private BSBaseAdapter adapter;
-
-    public abstract BSViewCell createCell();
 
     public BSGridView(Context context) {
         super(context);
@@ -28,11 +27,11 @@ public abstract class BSGridView extends ListView {
         super(context, attrs);
     }
 
-    public void construct(ArrayList<?> dataList, int numColumns, int itemWidth, int itemHeight, int horzSpacing, int vertSpacing) {
-        construct(dataList, numColumns, itemWidth, itemHeight, horzSpacing, vertSpacing, null, null);
+    public void init(ArrayList<?> dataList, int numColumns, int itemWidth, int itemHeight, int horzSpacing, int vertSpacing) {
+        init(dataList, numColumns, itemWidth, itemHeight, horzSpacing, vertSpacing, null, null);
     }
 
-    public void construct(ArrayList<?> dataList, int numColumns, int itemWidth, int itemHeight, int horzSpacing, int vertSpacing, ArrayList<View> headerViews,
+    public void init(ArrayList<?> dataList, int numColumns, int itemWidth, int itemHeight, int horzSpacing, int vertSpacing, ArrayList<View> headerViews,
             ArrayList<View> footerViews) {
         if (headerViews != null) {
             for (View headerView : headerViews) {
@@ -47,7 +46,7 @@ public abstract class BSGridView extends ListView {
         adapter = new BSGridAdapter(getContext(), dataList, numColumns, itemWidth, itemHeight, horzSpacing, vertSpacing) {
             @Override
             public BSViewCell createCell() {
-                return BSGridView.this.createCell();
+                return null;//createCellDelegate.createCell();
             }
         };
         setAdapter(adapter);

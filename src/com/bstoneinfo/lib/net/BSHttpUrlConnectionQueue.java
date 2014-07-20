@@ -42,33 +42,16 @@ public class BSHttpUrlConnectionQueue {
 
     private void start(final BSHttpUrlConnection connection, final BSHttpUrlConnectionListener listener) {
         runningConnections.add(connection);
-        connection.start(new BSHttpUrlConnectionListener() {
+        connection.start(listener);
+    }
 
-            @Override
-            public void finished(byte[] response) {
-                if (listener != null) {
-                    listener.finished(response);
-                }
-                runNext();
+    void runNext(BSHttpUrlConnection justFinished) {
+        synchronized (runningConnections) {
+            runningConnections.remove(justFinished);
+            if (!waitingConnections.isEmpty()) {
+                start(waitingConnections.removeFirst(), waitingListeners.removeFirst());
             }
-
-            @Override
-            public void failed(Exception exception) {
-                if (listener != null) {
-                    listener.failed(exception);
-                }
-                runNext();
-            }
-
-            private void runNext() {
-                synchronized (runningConnections) {
-                    runningConnections.remove(connection);
-                    if (!waitingConnections.isEmpty()) {
-                        start(waitingConnections.removeFirst(), waitingListeners.removeFirst());
-                    }
-                }
-            }
-        });
+        }
     }
 
 }

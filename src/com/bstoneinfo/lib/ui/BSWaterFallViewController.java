@@ -5,7 +5,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
+
+import com.bstoneinfo.lib.view.BSScrollView;
 
 public class BSWaterFallViewController extends BSViewController {
 
@@ -18,7 +19,7 @@ public class BSWaterFallViewController extends BSViewController {
 
     private final int columnCount;
     private final int columnInterval;
-    private final LinearLayout mainLayout;//scrollView下的主布局，包括body和footer
+    protected final LinearLayout mainLayout;//scrollView下的主布局，包括body和footer
     private final LinearLayout bodyLayout;
     private final LinearLayout[] columnLayoutArray;
     private final int[] columnHeightArray;
@@ -26,7 +27,7 @@ public class BSWaterFallViewController extends BSViewController {
     private PullUpState pullUpState;
 
     public BSWaterFallViewController(Context context, int columnCount, int columnInterval) {
-        super(new ScrollView(context));
+        super(new BSScrollView(context));
         if (columnCount < 2) {
             columnCount = 2;
         } else if (columnCount > 9) {
@@ -44,6 +45,10 @@ public class BSWaterFallViewController extends BSViewController {
 
         bodyLayout = new LinearLayout(context);
         bodyLayout.setOrientation(LinearLayout.HORIZONTAL);
+    }
+
+    public BSScrollView getScrollView() {
+        return (BSScrollView) getRootView();
     }
 
     public void setPullupState(PullUpState state) {
@@ -77,6 +82,10 @@ public class BSWaterFallViewController extends BSViewController {
                 footerFinishedView.setVisibility(View.VISIBLE);
             }
         }
+    }
+
+    public PullUpState getPullUpState() {
+        return pullUpState;
     }
 
     public void setFooterView(View footerView, View normalStatusView, View loadingStatusView, View failedStatusView, View finishedStatusView) {

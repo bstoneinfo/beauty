@@ -13,6 +13,7 @@ public class BSNotificationCenter {
     public static class BSNotificationEvent {
         public static final String APP_ENTER_FOREGROUND = "com.bstoneinfo.lib.common.BSNotificationCenter.BSNotificationEvent.APP_ENTER_FOREGROUND";
         public static final String APP_ENTER_BACKGROUND = "com.bstoneinfo.lib.common.BSNotificationCenter.BSNotificationEvent.APP_ENTER_BACKGROUND";
+        public static final String LOW_MEMORY_WARNING = "com.bstoneinfo.lib.common.BSNotificationCenter.BSNotificationEvent.LOW_MEMORY_WARNING";
         public static final String REMOTE_CONFIG_DID_CHANGE = "com.bstoneinfo.lib.common.BSNotificationCenter.BSNotificationEvent.REMOTE_CONFIG_DID_CHANGE";
 
     }

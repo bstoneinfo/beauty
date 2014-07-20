@@ -8,4 +8,9 @@ public class CategoryItemData {
     public String standardURL;
     public int standardWidth, standardHeight;
 
+    @Override
+    public String toString() {
+        return standardURL;
+    }
+
 }

@@ -23,7 +23,6 @@ public abstract class BSImageCell extends BSViewCell {
 
     @Override
     public void loadContent(Object data) {
-        super.loadContent(data);
         if (imageLoader != null) {
             imageLoader.cancel();
         }

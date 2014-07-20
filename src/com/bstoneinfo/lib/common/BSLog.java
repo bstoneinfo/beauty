@@ -6,11 +6,11 @@ import android.util.Log;
 public class BSLog {
 
     public static void d(String tag, String msg) {
-        log(Log.DEBUG, tag, msg);
+        log(Log.ERROR, tag, msg);
     }
 
     public static void d(String msg) {
-        log(Log.DEBUG, null, msg);
+        log(Log.ERROR, null, msg);
     }
 
     public static void e(String tag, String msg) {

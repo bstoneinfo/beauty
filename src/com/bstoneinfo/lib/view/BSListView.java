@@ -14,7 +14,11 @@ import com.bstoneinfo.lib.widget.BSViewCell;
 
 import custom.R;
 
-public abstract class BSListView extends ListView {
+public class BSListView extends ListView {
+
+    public interface CreateCellDelegate {
+        BSViewCell createCell();
+    }
 
     public interface PullUpWillLoadListener {
         boolean onBeginLoading();
@@ -28,10 +32,9 @@ public abstract class BSListView extends ListView {
         FINISHED
     }
 
-    public abstract BSViewCell createCell();
-
     private BSListViewImpl impl;
     private BSBaseAdapter adapter;
+    private CreateCellDelegate createCellDelegate;
 
     public BSListView(Context context) {
         super(context);
@@ -41,11 +44,15 @@ public abstract class BSListView extends ListView {
         super(context, attrs);
     }
 
-    public void construct(ArrayList<?> dataList) {
-        construct(dataList, null, null);
+    public void setCreateCellDelegate(CreateCellDelegate createCellDelegate) {
+        this.createCellDelegate = createCellDelegate;
     }
 
-    public void construct(ArrayList<?> dataList, ArrayList<View> headerViews, ArrayList<View> footerViews) {
+    public void init(ArrayList<?> dataList) {
+        init(dataList, null, null);
+    }
+
+    public void init(ArrayList<?> dataList, ArrayList<View> headerViews, ArrayList<View> footerViews) {
         if (headerViews != null) {
             for (View headerView : headerViews) {
                 addHeaderView(headerView, null, false);
@@ -59,7 +66,7 @@ public abstract class BSListView extends ListView {
         adapter = new BSBaseAdapter(getContext(), dataList) {
             @Override
             public BSViewCell createCell() {
-                return BSListView.this.createCell();
+                return createCellDelegate.createCell();
             }
         };
         setAdapter(adapter);
