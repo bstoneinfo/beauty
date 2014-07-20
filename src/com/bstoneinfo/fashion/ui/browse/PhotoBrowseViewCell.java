@@ -18,17 +18,15 @@ import custom.R;
 public class PhotoBrowseViewCell extends BSViewCell {
 
     private BSImageView imageView;
-    private ProgressBar loadMoreProgressBar;
+    private ProgressBar progressBar;
     ImageView refreshView;
-    //    private BSCircularProgressBar circularProgressBar;
     private CategoryItemData itemData;
 
     public PhotoBrowseViewCell(Context context) {
         super(context, R.layout.photo_browse_cell);
         imageView = (BSImageView) getRootView().findViewById(R.id.imageView);
         refreshView = (ImageView) getRootView().findViewById(R.id.refresh);
-        loadMoreProgressBar = (ProgressBar) getRootView().findViewById(R.id.progressBar);
-        //        circularProgressBar = (BSCircularProgressBar) getRootView().findViewById(R.id.circularBar);
+        progressBar = (ProgressBar) getRootView().findViewById(R.id.progressBar);
     }
 
     @Override
@@ -36,11 +34,11 @@ public class PhotoBrowseViewCell extends BSViewCell {
         BSLog.e("position=" + position + " data=" + String.valueOf(data));
         itemData = (CategoryItemData) data;
         if (data == null) {
-            loadMoreProgressBar.setVisibility(View.VISIBLE);
+            progressBar.setVisibility(View.VISIBLE);
             imageView.setVisibility(View.GONE);
             refreshView.setVisibility(View.GONE);
         } else {
-            loadMoreProgressBar.setVisibility(View.GONE);
+            progressBar.setVisibility(View.GONE);
             if (TextUtils.isEmpty(itemData.standardURL)) {
                 refreshView.setVisibility(View.VISIBLE);
                 imageView.setVisibility(View.GONE);
@@ -51,7 +49,36 @@ public class PhotoBrowseViewCell extends BSViewCell {
                     @Override
                     public void statusChanged(BSImageLoadStatus status) {
                         BSLog.e("position=" + position + " status=" + status);
+                        if (status == BSImageLoadStatus.REMOTE_LOADING) {
+                            progressBar.setVisibility(View.VISIBLE);
+                        }
                         if (status == BSImageLoadStatus.LOADED || status == BSImageLoadStatus.FAILED) {
+                            progressBar.setVisibility(View.GONE);
+                            if (status == BSImageLoadStatus.FAILED) {
+                                imageView.setStatusChangedListener(new StatusChangedListener() {
+                                    @Override
+                                    public void statusChanged(BSImageLoadStatus status) {
+                                        BSLog.d("position=" + position + " status=" + status);
+                                        if (status == BSImageLoadStatus.REMOTE_LOADING) {
+                                            progressBar.setVisibility(View.VISIBLE);
+                                        } else if (status == BSImageLoadStatus.LOADED) {
+                                            progressBar.setVisibility(View.GONE);
+                                        } else if (status == BSImageLoadStatus.FAILED) {
+                                            progressBar.setVisibility(View.GONE);
+                                            refreshView.setVisibility(View.VISIBLE);
+                                            refreshView.setOnClickListener(new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View v) {
+                                                    refreshView.setVisibility(View.GONE);
+                                                    loadStandardPhoto(itemData);
+                                                }
+                                            });
+                                        }
+                                    }
+                                });
+                            } else {
+                                imageView.setStatusChangedListener(null);
+                            }
                             loadStandardPhoto(itemData);
                         }
                     }
@@ -59,32 +86,9 @@ public class PhotoBrowseViewCell extends BSViewCell {
                 imageView.setUrl(itemData.thumbURL);//加载本地的缩略图
             }
         }
-        //        circularProgressBar.setVisibility(View.GONE);
     }
 
-    private void loadStandardPhoto(CategoryItemData itemData) {
-        //        imageView.setProgressListener(new ProgressListener() {
-        //            @Override
-        //            public void progress(int downloadedBytes, int totalBytes) {
-        //                if (totalBytes > 0) {
-        //                    circularProgressBar.setSweepAngle((float) downloadedBytes / totalBytes * 360);
-        //                }
-        //            }
-        //        });
-        //        imageView.setStatusChangedListener(new StatusChangedListener() {
-        //            @Override
-        //            public void statusChanged(BSImageLoadStatus status) {
-        //                BSLog.d("position=" + position + " status=" + status);
-        //                if (status == BSImageLoadStatus.REMOTE_LOADING) {
-        //                    circularProgressBar.setVisibility(View.VISIBLE);
-        //                } else if (status == BSImageLoadStatus.LOADED) {
-        //                    circularProgressBar.setVisibility(View.GONE);
-        //                } else if (status == BSImageLoadStatus.FAILED) {
-        //                    circularProgressBar.setVisibility(View.GONE);
-        //                }
-        //            }
-        //        });
-        imageView.setStatusChangedListener(null);
+    private void loadStandardPhoto(final CategoryItemData itemData) {
         imageView.setUrl(itemData.standardURL);
     }
 
