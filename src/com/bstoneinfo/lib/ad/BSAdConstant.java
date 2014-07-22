@@ -1,19 +1,14 @@
 package com.bstoneinfo.lib.ad;
 
-import custom.R;
-
-public class AdConstant {
-    final static String AppId_Admob = "a150cc2cec89398";
+public class BSAdConstant {
+    //    final static String AppId_Admob = "a150cc2cec89398";
+    final static String AppId_Admob = "ca-app-pub-3897310542142538/8654485008";
     final static String AppId_AdChina_Banner = "81322";
     final static String AppId_AdChina_FullScreen = "81323";
     final static String AppId_Mobisage = "244648fdc1f14616aa865780c50891f7";
     final static String AppId_Baidu = "bc1ce592";
-    //	final static  String AppId_Baidu = "debug";
 
-    public static int idDrawableAdchinaClose = R.drawable.adchina_close;
-    public static int idDrawableAdchinaLoading = R.drawable.loading;
-
-    public static void createBanner(AdManager adManager) {
+    public static void createBanner(BSAdManager adManager) {
         if (!adManager.isEmpty()) {
             return;
         }
@@ -23,5 +18,11 @@ public class AdConstant {
         if (adManager.contains(BannerAdmob.tag)) {
             adManager.addAdView(new BannerAdmob(adManager));
         }
+        if (adManager.contains(BannerBaidu.tag)) {
+            adManager.addAdView(new BannerBaidu(adManager));
+        }
+        //        if (adManager.contains(BannerMobisage.tag)) {
+        //            adManager.addAdView(new BannerMobisage(adManager));
+        //        }
     }
 }

@@ -2,17 +2,17 @@ package com.bstoneinfo.lib.ad;
 
 import android.view.View;
 
-public abstract class Banner {
+public abstract class BSAdBanner {
 
-	protected AdManager adManager;
+	protected BSAdManager adManager;
 
 	abstract String getTag();
 
 	abstract View getView();
 
-	abstract void create(AdManager adManager);
+	abstract void create(BSAdManager adManager);
 
-	Banner(AdManager adManager) {
+	BSAdBanner(BSAdManager adManager) {
 		this.adManager = adManager;
 		create(adManager);
 	}

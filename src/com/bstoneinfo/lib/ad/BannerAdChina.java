@@ -1,140 +1,112 @@
 package com.bstoneinfo.lib.ad;
 
-import com.adchina.android.ads.views.AdView;
-
-import android.graphics.Color;
 import android.view.View;
 
-public class BannerAdChina extends Banner {
+import com.adchina.android.ads.AdManager;
+import com.adchina.android.ads.api.AdBannerListener;
+import com.adchina.android.ads.api.AdFsListener;
+import com.adchina.android.ads.api.AdFullScreen;
+import com.adchina.android.ads.api.AdView;
 
-	final public static String tag = "adchina";
+public class BannerAdChina extends BSAdBanner {
 
-	private AdView adView;
-	private boolean fullscreenStarted = false;
+    final public static String tag = "adchina";
 
-	BannerAdChina(AdManager adManager) {
-		super(adManager);
-	}
+    private AdView adView;
+    private AdFullScreen adFullScreen;
 
-	@Override
-	String getTag() {
-		return tag;
-	}
+    BannerAdChina(BSAdManager adManager) {
+        super(adManager);
+    }
 
-	@Override
-	View getView() {
-		return adView;
-	}
+    @Override
+    String getTag() {
+        return tag;
+    }
 
-	@Override
-	void create(final AdManager adManager) {
-		if (adView != null)
-			return;
-		adView = new com.adchina.android.ads.views.AdView(adManager.activity, AdConstant.AppId_AdChina_Banner, true, false);
-		com.adchina.android.ads.AdEngine.initAdEngine(adManager.activity);
-		com.adchina.android.ads.AdManager.setRefershinterval(30);
-		com.adchina.android.ads.AdManager.setmVideoPlayer(true);
-		com.adchina.android.ads.AdManager.setRelateScreenRotate(adManager.activity, true);
-		com.adchina.android.ads.AdManager.setCloseImg(AdConstant.idDrawableAdchinaClose);
-		com.adchina.android.ads.AdManager.setLoadingImg(AdConstant.idDrawableAdchinaLoading);
-		com.adchina.android.ads.AdManager.setFullScreenAdspaceId(AdConstant.AppId_AdChina_FullScreen);
-		com.adchina.android.ads.AdManager.setShowFullScreenTimer(true); // 设置是否显示倒计时
-		com.adchina.android.ads.AdManager.setAdWindowBackgroundColor(Color.WHITE);// 设置全屏背景色
-		com.adchina.android.ads.AdManager.setFullScreenTimerTextColor(Color.BLACK);// 设置全屏广告倒计时文字颜色
-		com.adchina.android.ads.AdEngine.setAdListener(new com.adchina.android.ads.AdListener() {
+    @Override
+    View getView() {
+        return adView;
+    }
 
-			@Override
-			public void onReceiveAd(com.adchina.android.ads.views.AdView arg0) {
-				adManager.log("Adchina - onReceiveAd");
-				adManager.adReceived(BannerAdChina.this);
-			}
+    @Override
+    void create(final BSAdManager adManager) {
+        if (adView != null) {
+            return;
+        }
+        adView = new AdView(adManager.activity, BSAdConstant.AppId_AdChina_Banner, true, false);
+        AdManager.setEnableLbs(true); // 是否开启lbs精确广告定位
+        AdManager.setRelateScreenRotate(adManager.activity, false); // 是否关心屏幕旋转，详细请查看文档
+        AdManager.setAnimation(false); // banner展示是否需要动画
+        AdManager.setLogMode(true); // 显示调试日志，发布时请关闭
+        AdManager.setCanHardWare(true); // 是否允许打开硬件加速
+        AdManager.setExpandToolBar(true); // 设置拓展页初始时展开还是关闭状态
+        adView.setAdBannerListener(new AdBannerListener() {
+            @Override
+            public void onReceiveAd(AdView arg0) {
+                adManager.log("Adchina - onReceiveAd");
+                adManager.adReceived(BannerAdChina.this);
+            }
 
-			@Override
-			public void onFailedToReceiveAd(com.adchina.android.ads.views.AdView arg0) {
-				adManager.log("Adchina - onFailedToReceiveAd");
-			}
+            @Override
+            public void onFailedToReceiveAd(AdView arg0) {
+                adManager.log("Adchina - onFailedToReceiveAd");
+            }
 
-			@Override
-			public void onRefreshAd(com.adchina.android.ads.views.AdView arg0) {
-				adManager.log("Adchina - onRefreshAd");
-				adManager.adReceived(BannerAdChina.this);
-			}
+            @Override
+            public void onClickBanner(AdView arg0) {
+                adManager.log("Adchina - onClickBanner");
+            }
+        });
+        adView.start();
+        adView.setVisibility(View.GONE);
+    }
 
-			@Override
-			public void onFailedToRefreshAd(com.adchina.android.ads.views.AdView arg0) {
-				adManager.log("Adchina - onFailedToRefreshAd");
-			}
+    @Override
+    boolean startFullscreen() {
+        adFullScreen = new AdFullScreen(adManager.activity, BSAdConstant.AppId_AdChina_FullScreen);
+        adFullScreen.setAdFsListener(new AdFsListener() {
 
-			@Override
-			public void onStartFullScreenLandPage() {
-				adManager.log("Adchina - onStartFullScreenLandPage");
-			}
+            @Override
+            public void onStartFullScreenLandPage() {
+                adManager.log("Adchina - onStartFullScreenLandPage");
+            }
 
-			@Override
-			public void onReceiveFullScreenAd() {
-				adManager.log("Adchina - onReceiveFullScreenAd");
-				com.adchina.android.ads.AdEngine.getAdEngine().showFullScreenAd(null);
-				adManager.fullscreenReceived();
-			}
+            @Override
+            public void onReceiveFullScreenAd() {
+                adManager.log("Adchina - onReceiveFullScreenAd");
+                adFullScreen.showFs();
+                adManager.fullscreenReceived();
+            }
 
-			@Override
-			public void onDisplayFullScreenAd() {
-				adManager.log("Adchina - onDisplayFullScreenAd");
-			}
+            @Override
+            public void onFinishFullScreenAd() {
+                adManager.log("Adchina - onFinishFullScreenAd");
+            }
 
-			@Override
-			public void onEndFullScreenLandpage() {
-				adManager.log("Adchina - onEndFullScreenLandpage");
-			}
+            @Override
+            public void onFailedToReceiveFullScreenAd() {
+                adManager.log("Adchina - onFailedToReceiveFullScreenAd");
+                adManager.fullscreenFailed();
+            }
 
-			@Override
-			public void onFailedToReceiveFullScreenAd() {
-				adManager.log("Adchina - onFailedToReceiveFullScreenAd");
-				adManager.fullscreenFailed();
-			}
+            @Override
+            public void onEndFullScreenLandpage() {
+                adManager.log("Adchina - onEndFullScreenLandpage");
+            }
 
-			@Override
-			public void onReceiveVideoAd() {
-				adManager.log("Adchina - onReceiveVideoAd");
-			}
+            @Override
+            public void onDisplayFullScreenAd() {
+                adManager.log("Adchina - onDisplayFullScreenAd");
+            }
 
-			@Override
-			public void onPlayVideoAd() {
-				adManager.log("Adchina - onPlayVideoAd");
-			}
-
-			@Override
-			public void onFailedToReceiveVideoAd() {
-				adManager.log("Adchina - onFailedToReceiveVideoAd");
-			}
-
-			@Override
-			public void onFailedToPlayVideoAd() {
-				adManager.log("Adchina - onFailedToPlayVideoAd");
-			}
-
-			@Override
-			public void onClickBanner(com.adchina.android.ads.views.AdView arg0) {
-				adManager.log("Adchina - onClickBanner");
-			}
-
-			@Override
-			public boolean OnRecvSms(com.adchina.android.ads.views.AdView arg0, String arg1) {
-				adManager.log("Adchina - OnRecvSms");
-				return false;
-			}
-
-		});
-		adView.setVisibility(View.GONE);
-	}
-
-	@Override
-	boolean startFullscreen() {
-		if (fullscreenStarted)
-			return false;
-		fullscreenStarted = true;
-		com.adchina.android.ads.AdEngine.getAdEngine().startFullScreenAd();
-		return true;
-	}
+            @Override
+            public void onClickFullScreenAd() {
+                adManager.log("Adchina - onClickFullScreenAd");
+            }
+        });
+        adFullScreen.start();
+        return true;
+    }
 
 }
