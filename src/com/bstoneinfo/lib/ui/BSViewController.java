@@ -16,7 +16,6 @@ import android.view.animation.Animation.AnimationListener;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
 
 import com.bstoneinfo.lib.common.BSAnimation;
 import com.bstoneinfo.lib.common.BSApplication;
@@ -82,8 +81,7 @@ public class BSViewController {
     }
 
     public BSViewController(Context context) {
-        rootView = new RelativeLayout(context);
-        rootView.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
+        rootView = new FrameLayout(context);
         rootView.setClickable(true);
     }
 

@@ -1,4 +1,11 @@
 {
+  "Ad": {
+    "AppKey_AdChina_FullScreen": "81323",
+    "AppKey_AdChina_Banner": "81322",
+    "AppKey_Admob": "ca-app-pub-3897310542142538/8654485008",
+    "AppKey_Baidu": "bc1ce592",
+    "AppKey_Mobisage": "244648fdc1f14616aa865780c50891f7"
+  },
   "server": [
     "www.bstoneinfo.com"
   ],
