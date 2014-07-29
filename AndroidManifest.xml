@@ -36,14 +36,11 @@
         <meta-data
             android:name="PRODUCT_TAG"
             android:value="default" />
-        <meta-data
-            android:name="AD_TYPE"
-            android:value="admob,adchina" />
 
         <activity
             android:name="com.bstoneinfo.fashion.app.MainActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.Activity" >
+            android:theme="@style/Theme.Activity" 
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

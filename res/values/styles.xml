@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Activity" parent="android:style/Theme.NoTitleBar">
+    <style name="Theme.Activity" parent="android:style/Theme.Light.NoTitleBar">
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowContentOverlay">@null</item>
     </style>
