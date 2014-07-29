@@ -40,7 +40,7 @@ public class BSWaterFallViewController extends BSViewController {
 
         mainLayout = new LinearLayout(context);
         mainLayout.setOrientation(LinearLayout.VERTICAL);
-        mainLayout.setPadding(columnInterval, columnInterval, 0, 0);
+        mainLayout.setPadding(0, columnInterval, 0, 0);
         getRootView().addView(mainLayout, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         bodyLayout = new LinearLayout(context);
@@ -106,7 +106,9 @@ public class BSWaterFallViewController extends BSViewController {
         for (int i = 0; i < columnCount; i++) {
             LinearLayout linearLayout = new LinearLayout(getContext());
             linearLayout.setOrientation(LinearLayout.VERTICAL);
-            bodyLayout.addView(linearLayout, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
+            lp.setMargins(i == 0 ? columnInterval : 0, 0, columnInterval, 0);
+            bodyLayout.addView(linearLayout, lp);
             columnLayoutArray[i] = linearLayout;
         }
         setPullupState(PullUpState.NORMAL);
@@ -122,7 +124,7 @@ public class BSWaterFallViewController extends BSViewController {
             }
         }
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(width, height);
-        lp.setMargins(0, 0, columnInterval, columnInterval);
+        lp.setMargins(0, 0, 0, columnInterval);
         columnLayoutArray[minColumn].addView(childView, lp);
         columnHeightArray[minColumn] += height;
     }

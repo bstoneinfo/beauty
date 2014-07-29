@@ -9,8 +9,12 @@ import android.graphics.Color;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.LinearLayout;
 
 import com.bstoneinfo.fashion.data.CategoryItemData;
+import com.bstoneinfo.lib.ad.BSAdBannerAdChina;
+import com.bstoneinfo.lib.ad.BSAdBannerAdmob;
+import com.bstoneinfo.lib.ad.BSAdBannerViewController;
 import com.bstoneinfo.lib.ui.BSViewController;
 import com.bstoneinfo.lib.view.BSPagerView;
 import com.bstoneinfo.lib.widget.BSCellAdapter;
@@ -24,15 +28,20 @@ public abstract class PhotoBrowseViewController extends BSViewController {
     private int position;
     private boolean bLoadmoreEnded = false;
     private boolean bLoadmoreFailed = false;
+    final private BSAdBannerViewController adBanner;
 
     public PhotoBrowseViewController(Context context, ArrayList<CategoryItemData> itemDataList, String dataEventName, int position, boolean loadmoreEnded) {
-        super(context);
+        super(new LinearLayout(context));
+        ((LinearLayout) getRootView()).setOrientation(LinearLayout.VERTICAL);
         this.dataEventName = dataEventName;
         this.position = position;
         this.itemDataList = (ArrayList<CategoryItemData>) itemDataList.clone();
         bLoadmoreEnded = loadmoreEnded;
         getRootView().setBackgroundColor(Color.BLACK);
         pagerView = new BSPagerView(getContext());
+        adBanner = new BSAdBannerViewController(context);
+        adBanner.addAdObject(new BSAdBannerAdmob(getActivity()));
+        adBanner.addAdObject(new BSAdBannerAdChina(getActivity()));
     }
 
     @Override
@@ -63,7 +72,8 @@ public abstract class PhotoBrowseViewController extends BSViewController {
             }
         };
         pagerView.setAdapter(adapter);
-        getRootView().addView(pagerView);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1);
+        getRootView().addView(pagerView, params);
 
         pagerView.setCurrentItem(position);
         pagerView.setOnPageChangeListener(new OnPageChangeListener() {
@@ -115,6 +125,9 @@ public abstract class PhotoBrowseViewController extends BSViewController {
                 pagerView.notifyDataSetChanged();
             }
         });
+
+        addChildViewController(adBanner);
+
     }
 
     abstract protected void loadMore();

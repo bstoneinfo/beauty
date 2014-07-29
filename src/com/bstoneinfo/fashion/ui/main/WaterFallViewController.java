@@ -8,11 +8,14 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView.ScaleType;
+import android.widget.LinearLayout;
 
 import com.bstoneinfo.fashion.data.CategoryDataSource;
 import com.bstoneinfo.fashion.data.CategoryItemData;
 import com.bstoneinfo.fashion.data.CategoryManager;
 import com.bstoneinfo.fashion.ui.browse.PhotoBrowseViewController;
+import com.bstoneinfo.lib.ad.BSAdBannerAdChina;
+import com.bstoneinfo.lib.ad.BSAdBannerBaidu;
 import com.bstoneinfo.lib.common.BSApplication;
 import com.bstoneinfo.lib.common.BSImageLoader.BSImageLoadStatus;
 import com.bstoneinfo.lib.common.BSNotificationCenter.BSNotificationEvent;
@@ -37,6 +40,10 @@ public abstract class WaterFallViewController extends BSWaterFallViewController 
 
     protected final String categoryName;
 
+    private final BSAdBannerAdChina adchina;
+    private final BSAdBannerBaidu adBaidu;
+    private final LinearLayout footerView;
+
     abstract protected void loadMore();
 
     public WaterFallViewController(Context context, String categoryName, final String dataEventName) {
@@ -44,9 +51,17 @@ public abstract class WaterFallViewController extends BSWaterFallViewController 
         this.categoryName = categoryName;
         setNotificationCenter(BSApplication.defaultNotificationCenter);
 
-        View footerView = LayoutInflater.from(context).inflate(R.layout.loadmore, null);
-        setFooterView(footerView, footerView.findViewById(R.id.loadmore_normal), footerView.findViewById(R.id.loadmore_loading), footerView.findViewById(R.id.loadmore_failed),
-                null);
+        adchina = new BSAdBannerAdChina(getActivity());
+        adBaidu = new BSAdBannerBaidu(getActivity());
+
+        footerView = new LinearLayout(getContext());
+        footerView.setOrientation(LinearLayout.VERTICAL);
+
+        View loadmoreView = LayoutInflater.from(context).inflate(R.layout.loadmore, null);
+        footerView.addView(loadmoreView);
+
+        setFooterView(footerView, loadmoreView.findViewById(R.id.loadmore_normal), loadmoreView.findViewById(R.id.loadmore_loading),
+                loadmoreView.findViewById(R.id.loadmore_failed), null);
         View.OnClickListener loadmoreClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -54,8 +69,8 @@ public abstract class WaterFallViewController extends BSWaterFallViewController 
                 loadMore();
             }
         };
-        footerView.findViewById(R.id.loadmore_button).setOnClickListener(loadmoreClickListener);
-        footerView.findViewById(R.id.loadmore_refresh).setOnClickListener(loadmoreClickListener);
+        loadmoreView.findViewById(R.id.loadmore_button).setOnClickListener(loadmoreClickListener);
+        loadmoreView.findViewById(R.id.loadmore_refresh).setOnClickListener(loadmoreClickListener);
 
         addNotificationObserver(dataEventName, new Observer() {
             @SuppressWarnings("unchecked")
@@ -114,6 +129,12 @@ public abstract class WaterFallViewController extends BSWaterFallViewController 
     @Override
     protected void viewDidLoad() {
         super.viewDidLoad();
+
+        adchina.start();
+        adBaidu.start();
+        footerView.addView(adchina.getAdView(), 0);
+        footerView.addView(adBaidu.getAdView(), 0);
+
         loadMore();
         setPullupState(PullUpState.LOADING);
         getScrollView().setOnScrollChangedListener(new OnScrollChangedListener() {
@@ -185,5 +206,12 @@ public abstract class WaterFallViewController extends BSWaterFallViewController 
             setImageViewVisible(imageView, getViewStatus() == ViewStatus.Appearing || getViewStatus() == ViewStatus.Appeared);
         }
         super.addView(childView, width, height);
+    }
+
+    @Override
+    protected void destroy() {
+        adchina.destroy();
+        adBaidu.destroy();
+        super.destroy();
     }
 }
