@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.widget.LinearLayout;
 
+import com.bstoneinfo.lib.ad.BSAdBannerAdmob;
 import com.bstoneinfo.lib.ui.BSActivity;
 import com.bstoneinfo.lib.ui.BSPagerBarViewController;
 import com.bstoneinfo.lib.ui.BSViewController;
@@ -15,10 +17,13 @@ import custom.R;
 public class CategoryViewController extends BSViewController {
 
     protected final String categoryName;
+    private final BSAdBannerAdmob admob;
 
     public CategoryViewController(Context context, String categoryName) {
-        super(context);
+        super(new LinearLayout(context));
+        ((LinearLayout) getRootView()).setOrientation(LinearLayout.VERTICAL);
         this.categoryName = categoryName;
+        admob = new BSAdBannerAdmob(getActivity());
     }
 
     @Override
@@ -54,6 +59,18 @@ public class CategoryViewController extends BSViewController {
             }
         });
         addChildViewController(pagerViewController);
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) pagerViewController.getRootView().getLayoutParams();
+        params.weight = 1;
+        params.height = 0;
+        pagerViewController.getRootView().setLayoutParams(params);
+        admob.start();
+        getRootView().addView(admob.getAdView());
+    }
+
+    @Override
+    protected void destroy() {
+        admob.destroy();
+        super.destroy();
     }
 
 }

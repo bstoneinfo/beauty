@@ -53,6 +53,11 @@ public class BSAdBannerViewController extends BSViewController {
 
             @Override
             public void adFailed() {
+                adIndex++;
+                if (adIndex >= adObjectArray.size()) {
+                    adIndex = 0;
+                }
+                startAd();
             }
         });
         adObject.start();
