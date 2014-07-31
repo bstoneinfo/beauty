@@ -8,8 +8,13 @@ import android.text.TextUtils;
 import com.bstoneinfo.lib.common.BSApplication;
 
 public class MyUtils {
+
+    private static String host = null;
+
     public static String getHost() {
-        String host = null;
+        if (host != null) {
+            return host;
+        }
         JSONObject jsonConfig = BSApplication.getApplication().getRemoteConfig();
         JSONArray jsonArray = jsonConfig.optJSONArray("server");
         if (jsonArray != null && jsonArray.length() > 0) {
