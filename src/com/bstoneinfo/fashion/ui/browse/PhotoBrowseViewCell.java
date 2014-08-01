@@ -3,11 +3,14 @@ package com.bstoneinfo.fashion.ui.browse;
 import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.bstoneinfo.fashion.app.MyUtils;
 import com.bstoneinfo.fashion.data.CategoryItemData;
+import com.bstoneinfo.fashion.data.MainDBHelper;
+import com.bstoneinfo.fashion.data.MainDBHelper.DBResultListener;
 import com.bstoneinfo.lib.common.BSImageLoader.BSImageLoadStatus;
 import com.bstoneinfo.lib.common.BSImageLoader.StatusChangedListener;
 import com.bstoneinfo.lib.common.BSLog;
@@ -21,6 +24,7 @@ public class PhotoBrowseViewCell extends BSViewCell {
     private BSImageView imageView;
     private ProgressBar progressBar;
     ImageView refreshView;
+    private ImageView likeView;
     private CategoryItemData itemData;
 
     public PhotoBrowseViewCell(Context context) {
@@ -28,6 +32,7 @@ public class PhotoBrowseViewCell extends BSViewCell {
         imageView = (BSImageView) getRootView().findViewById(R.id.imageView);
         refreshView = (ImageView) getRootView().findViewById(R.id.refresh);
         progressBar = (ProgressBar) getRootView().findViewById(R.id.progressBar);
+        likeView = (ImageView) getRootView().findViewById(R.id.like);
     }
 
     @Override
@@ -85,6 +90,33 @@ public class PhotoBrowseViewCell extends BSViewCell {
                     }
                 });
                 imageView.setUrl("http://" + MyUtils.getHost() + itemData.thumbURL);//加载本地的缩略图
+                final boolean bLike = MainDBHelper.getSingleton().isLike(itemData);
+                likeView.setBackgroundResource(bLike ? R.drawable.heart_red : R.drawable.heart_grey);
+                likeView.setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (bLike) {
+                            MainDBHelper.getSingleton().likeRemove(itemData, new DBResultListener() {
+                                @Override
+                                public void finished(boolean success) {
+                                    if (success) {
+                                        likeView.setBackgroundResource(R.drawable.heart_grey);
+                                    }
+                                }
+                            });
+                        } else {
+                            MainDBHelper.getSingleton().likeAdd(itemData.category, itemData, new DBResultListener() {
+                                @Override
+                                public void finished(boolean success) {
+                                    if (success) {
+                                        likeView.setBackgroundResource(R.drawable.heart_red);
+                                    }
+                                }
+                            });
+
+                        }
+                    }
+                });
             }
         }
     }

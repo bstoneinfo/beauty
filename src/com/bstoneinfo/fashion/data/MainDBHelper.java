@@ -27,6 +27,18 @@ public class MainDBHelper extends BSDBHelper {
     final static String FIELD_CATEGORY_ID = "categoryID";
     final static String FIELD_LIKE_JSON = "json";
 
+    private static MainDBHelper instance;
+
+    public static MainDBHelper getSingleton() {
+        return instance;
+    }
+
+    public static void createSingleton(Context context) {
+        if (instance == null) {
+            instance = new MainDBHelper(context, DATABASE_VERSION);
+        }
+    }
+
     public MainDBHelper(Context context, int version) {
         super(context, "main", version);
     }
@@ -66,7 +78,10 @@ public class MainDBHelper extends BSDBHelper {
     }
 
     public void likeAdd(String categoryID, final CategoryItemData item, final DBResultListener listener) {
-        BSUtils.debugAssert(item.likeID <= 0, "item has been liked. " + item.toString());
+        if (item.likeID > 0) {
+            BSUtils.debugAssert("item has been liked. " + item.toString());
+            return;
+        }
         ContentValues values = new ContentValues();
         values.put(FIELD_CATEGORY_ID, categoryID);
         values.put(FIELD_LIKE_KEY, item.standardURL);
@@ -88,11 +103,18 @@ public class MainDBHelper extends BSDBHelper {
         });
     }
 
-    public void likeRemove(int likeID, final DBResultListener listener) {
-        delete(TABLE_LIKE, FIELD_LIKE_ID, String.valueOf(likeID), new DBExecuteListener() {
+    public void likeRemove(final CategoryItemData item, final DBResultListener listener) {
+        if (item.likeID <= 0) {
+            BSUtils.debugAssert("item has not been liked. " + item.toString());
+            return;
+        }
+        delete(TABLE_LIKE, FIELD_LIKE_ID, String.valueOf(item.likeID), new DBExecuteListener() {
             @Override
             public void finished(long result) {
                 if (listener != null) {
+                    if (result > 0) {
+                        item.likeID = 0;
+                    }
                     listener.finished(result > 0);
                 }
             }
@@ -122,7 +144,8 @@ public class MainDBHelper extends BSDBHelper {
                     String likeJson = cursor.getString(cursor.getColumnIndex(FIELD_LIKE_JSON));
                     try {
                         JSONObject jsonObject = new JSONObject(likeJson);
-                        CategoryItemData item = new CategoryItemData(jsonObject);
+                        String category = cursor.getString(cursor.getColumnIndex(FIELD_CATEGORY_ID));
+                        CategoryItemData item = new CategoryItemData(category, jsonObject);
                         item.likeID = cursor.getInt(cursor.getColumnIndex(FIELD_LIKE_ID));
                         itemList.add(item);
                     } catch (JSONException e) {

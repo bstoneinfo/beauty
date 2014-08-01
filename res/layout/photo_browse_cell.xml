@@ -23,6 +23,15 @@
         android:background="@drawable/loadmore_refresh_selector"
         android:visibility="gone" />
 
+    <ImageView
+        android:id="@+id/like"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="10dp"
+        android:background="@drawable/heart_grey" />
+
     <!--
          <com.bstoneinfo.lib.view.BSCircularProgressBar
         android:id="@+id/circularBar"

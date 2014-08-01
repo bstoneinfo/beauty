@@ -4,6 +4,7 @@ import org.json.JSONObject;
 
 public class CategoryItemData {
 
+    public String category;
     public int likeID = -1;
 
     public String thumbURL;
@@ -14,10 +15,12 @@ public class CategoryItemData {
 
     public JSONObject jsonItem;
 
-    public CategoryItemData() {
+    public CategoryItemData(String category) {
+        this.category = category;
     }
 
-    public CategoryItemData(JSONObject jsonItem) {
+    public CategoryItemData(String category, JSONObject jsonItem) {
+        this.category = category;
         this.jsonItem = jsonItem;
         thumbURL = jsonItem.optString("thumb_url");
         thumbWidth = jsonItem.optInt("thumb_width");

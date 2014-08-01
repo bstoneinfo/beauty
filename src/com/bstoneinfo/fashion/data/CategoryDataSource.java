@@ -245,7 +245,7 @@ public class CategoryDataSource {
             JSONArray jsonArray = jsonObject.getJSONArray("data");
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonItem = jsonArray.getJSONObject(i);
-                CategoryItemData itemData = new CategoryItemData(jsonItem);
+                CategoryItemData itemData = new CategoryItemData(categoryName, jsonItem);
                 dataList.add(itemData);
             }
             return dataList;

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import android.os.Bundle;
 
 import com.bstoneinfo.fashion.data.CategoryManager;
+import com.bstoneinfo.fashion.data.MainDBHelper;
 import com.bstoneinfo.fashion.ui.main.CategoryViewController;
 import com.bstoneinfo.fashion.ui.main.FavoriteViewController;
 import com.bstoneinfo.fashion.ui.main.SettingsViewController;
@@ -23,6 +24,8 @@ public class MainActivity extends BSActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        MainDBHelper.createSingleton(this);
 
         CategoryViewController category51ViewController = new CategoryViewController(this, "51");
         CategoryViewController category52ViewController = new CategoryViewController(this, "52");

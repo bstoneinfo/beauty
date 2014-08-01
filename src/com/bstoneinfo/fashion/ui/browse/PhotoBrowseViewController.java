@@ -22,6 +22,7 @@ import com.bstoneinfo.lib.widget.BSViewCell;
 
 public abstract class PhotoBrowseViewController extends BSViewController {
 
+    final private String categoryName;
     final private BSPagerView pagerView;
     final private String dataEventName;
     final private ArrayList<CategoryItemData> itemDataList;
@@ -30,9 +31,10 @@ public abstract class PhotoBrowseViewController extends BSViewController {
     private boolean bLoadmoreFailed = false;
     final private BSAdBannerViewController adBanner;
 
-    public PhotoBrowseViewController(Context context, ArrayList<CategoryItemData> itemDataList, String dataEventName, int position, boolean loadmoreEnded) {
+    public PhotoBrowseViewController(Context context, String category, ArrayList<CategoryItemData> itemDataList, String dataEventName, int position, boolean loadmoreEnded) {
         super(new LinearLayout(context));
         ((LinearLayout) getRootView()).setOrientation(LinearLayout.VERTICAL);
+        this.categoryName = category;
         this.dataEventName = dataEventName;
         this.position = position;
         this.itemDataList = (ArrayList<CategoryItemData>) itemDataList.clone();
@@ -56,7 +58,7 @@ public abstract class PhotoBrowseViewController extends BSViewController {
                     return itemDataList.get(position);
                 }
                 if (bLoadmoreFailed) {
-                    return new CategoryItemData();
+                    return new CategoryItemData(categoryName);
                 }
                 return null;
             }

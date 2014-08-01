@@ -47,9 +47,9 @@ public abstract class WaterFallViewController extends BSWaterFallViewController 
 
     abstract protected void loadMore();
 
-    public WaterFallViewController(Context context, String categoryName, final String dataEventName) {
+    public WaterFallViewController(Context context, String category, final String dataEventName) {
         super(context, COLUMN_COUNT, BSActivity.dip2px(COLUMN_INTERVAL_DP));
-        this.categoryName = categoryName;
+        this.categoryName = category;
         setNotificationCenter(BSApplication.defaultNotificationCenter);
 
         adchina = new BSAdBannerAdChina(getActivity());
@@ -101,8 +101,8 @@ public abstract class WaterFallViewController extends BSWaterFallViewController 
                                 public void onClick(View v) {
                                     BSImageLoadStatus status = imageView.getImageLoadStatus();
                                     if (status == BSImageLoadStatus.LOADED) {
-                                        PhotoBrowseViewController photoBrowseViewController = new PhotoBrowseViewController(getContext(), itemDataList, dataEventName,
-                                                finalPosition, getPullUpState() == PullUpState.FINISHED) {
+                                        PhotoBrowseViewController photoBrowseViewController = new PhotoBrowseViewController(getContext(), categoryName, itemDataList,
+                                                dataEventName, finalPosition, getPullUpState() == PullUpState.FINISHED) {
                                             @Override
                                             protected void loadMore() {
                                                 WaterFallViewController.this.loadMore();
