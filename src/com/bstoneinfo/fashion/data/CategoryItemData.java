@@ -5,7 +5,7 @@ import org.json.JSONObject;
 public class CategoryItemData {
 
     public String category;
-    public int likeID = -1;
+    public int favoriteID = -1;
 
     public String thumbURL;
     public int thumbWidth, thumbHeight;

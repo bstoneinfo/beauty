@@ -5,6 +5,6 @@ public class NotificationEvent {
     public static final String CATEGORY_EXPLORE_FINISHED_ = "CATEGORY_EXPLORE_FINISHED_";
     public static final String CATEGORY_HISTORY_FINISHED_ = "CATEGORY_HISTORY_FINISHED_";
 
-    public static final String LIKE_CHANGED = "LIKE_CHANGED"; //参数： CategoryItemData
+    public static final String FAVORITE_CHANGED = "FAVORITE_CHANGED"; //参数： CategoryItemData
 
 }

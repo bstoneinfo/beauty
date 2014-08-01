@@ -1,4 +1,4 @@
-package com.bstoneinfo.fashion.like;
+package com.bstoneinfo.fashion.favorite;
 
 import java.util.ArrayList;
 
@@ -12,30 +12,30 @@ import com.bstoneinfo.fashion.data.MainDBHelper;
 import com.bstoneinfo.lib.common.BSDBHelper.DBExecuteListener;
 import com.bstoneinfo.lib.common.BSDBHelper.DBQueryListener;
 
-public class LikeAgent {
+public class FavoriteAgent {
 
     private boolean canceled = false;
 
-    public interface LikeUpdateListener {
+    public interface FavoriteUpdateListener {
         public void finished(boolean success);
     }
 
-    public interface LikeQueryListener {
+    public interface FavoriteQueryListener {
         public void finished(ArrayList<CategoryItemData> itemList);
     }
 
-    public boolean isLike(CategoryItemData item) {
-        if (item.likeID > 0) {
+    public boolean isFavorite(CategoryItemData item) {
+        if (item.favoriteID > 0) {
             return true;
-        } else if (item.likeID == 0) {
+        } else if (item.favoriteID == 0) {
             return false;
         }
-        item.likeID = MainDBHelper.getSingleton().getLikeID(item.standardURL);
-        return item.likeID > 0;
+        item.favoriteID = MainDBHelper.getSingleton().getFavoriteID(item.standardURL);
+        return item.favoriteID > 0;
     }
 
-    public void likeQuery(int count, int fromID, final LikeQueryListener listener) {
-        MainDBHelper.getSingleton().likeQuery(count, fromID, new DBQueryListener() {
+    public void favoriteQuery(int count, int fromID, final FavoriteQueryListener listener) {
+        MainDBHelper.getSingleton().favoriteQuery(count, fromID, new DBQueryListener() {
             @Override
             public void finished(Cursor cursor) {
                 if (canceled) {
@@ -47,12 +47,12 @@ public class LikeAgent {
                     return;
                 }
                 for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-                    String likeJson = cursor.getString(cursor.getColumnIndex(MainDBHelper.FIELD_LIKE_ATTRS));
+                    String favoriteJson = cursor.getString(cursor.getColumnIndex(MainDBHelper.FIELD_FAVORITE_ATTRS));
                     try {
-                        JSONObject jsonObject = new JSONObject(likeJson);
+                        JSONObject jsonObject = new JSONObject(favoriteJson);
                         String category = cursor.getString(cursor.getColumnIndex(MainDBHelper.FIELD_CATEGORY_ID));
                         CategoryItemData item = new CategoryItemData(category, jsonObject);
-                        item.likeID = cursor.getInt(cursor.getColumnIndex(MainDBHelper.FIELD_LIKE_ID));
+                        item.favoriteID = cursor.getInt(cursor.getColumnIndex(MainDBHelper.FIELD_FAVORITE_ID));
                         itemList.add(item);
                     } catch (JSONException e) {
                     }
@@ -62,32 +62,28 @@ public class LikeAgent {
         });
     }
 
-    public void likeAdd(final CategoryItemData item, final LikeUpdateListener listener) {
-        MainDBHelper.getSingleton().likeAdd(item.category, item.standardURL, item.jsonItem.toString(), new DBExecuteListener() {
+    public void favoriteAdd(final CategoryItemData item, final FavoriteUpdateListener listener) {
+        MainDBHelper.getSingleton().favoriteAdd(item.category, item.standardURL, item.jsonItem.toString(), new DBExecuteListener() {
             @Override
             public void finished(long result) {
                 if (result > 0) {
-                    item.likeID = (int) result;
-                    if (listener != null) {
-                        listener.finished(true);
-                    }
-                } else {
-                    if (listener != null) {
-                        listener.finished(false);
-                    }
+                    item.favoriteID = (int) result;
+                }
+                if (listener != null && !canceled) {
+                    listener.finished(result > 0);
                 }
             }
         });
     }
 
-    public void likeRemove(final CategoryItemData item, final LikeUpdateListener listener) {
-        MainDBHelper.getSingleton().likeRemove(item.likeID, new DBExecuteListener() {
+    public void favoriteRemove(final CategoryItemData item, final FavoriteUpdateListener listener) {
+        MainDBHelper.getSingleton().favoriteRemove(item.favoriteID, new DBExecuteListener() {
             @Override
             public void finished(long result) {
-                if (listener != null) {
-                    if (result > 0) {
-                        item.likeID = 0;
-                    }
+                if (result > 0) {
+                    item.favoriteID = 0;
+                }
+                if (listener != null && !canceled) {
                     listener.finished(result > 0);
                 }
             }

@@ -6,8 +6,8 @@ import android.os.Bundle;
 
 import com.bstoneinfo.fashion.data.CategoryManager;
 import com.bstoneinfo.fashion.data.MainDBHelper;
+import com.bstoneinfo.fashion.favorite.FavoriteViewController;
 import com.bstoneinfo.fashion.ui.main.CategoryViewController;
-import com.bstoneinfo.fashion.ui.main.FavoriteViewController;
 import com.bstoneinfo.fashion.ui.main.SettingsViewController;
 import com.bstoneinfo.lib.ad.BSAdFSAdChina;
 import com.bstoneinfo.lib.ad.BSAdFullscreen;

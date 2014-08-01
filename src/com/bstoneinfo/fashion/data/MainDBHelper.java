@@ -5,17 +5,19 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.bstoneinfo.fashion.app.AppConfig;
 import com.bstoneinfo.lib.common.BSDBHelper;
 
 public class MainDBHelper extends BSDBHelper {
 
     final static int DATABASE_VERSION = 1;
 
-    public final static String TABLE_LIKE = "Like";
-    public final static String FIELD_LIKE_ID = "likeID";
-    public final static String FIELD_LIKE_KEY = "likeKey";
+    public final static String TABLE_FAVORITE = "Favorite";
+    public final static String FIELD_FAVORITE_ID = "favoriteID";
+    public final static String FIELD_FAVORITE_KEY = "favoriteKey";
     public final static String FIELD_CATEGORY_ID = "categoryID";
-    public final static String FIELD_LIKE_ATTRS = "attrs";
+    public final static String FIELD_FAVORITE_ATTRS = "attrs";
+    public final static String FIELD_UPDATE_TIME = "updateTime";
 
     private static MainDBHelper instance;
 
@@ -36,11 +38,12 @@ public class MainDBHelper extends BSDBHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         StringBuilder sb = new StringBuilder();
-        sb.append("CREATE TABLE IF NOT EXISTS ").append(TABLE_LIKE).append(" (");
-        sb.append(FIELD_LIKE_ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ");
-        sb.append(FIELD_LIKE_KEY).append(" TEXT, ");
+        sb.append("CREATE TABLE IF NOT EXISTS ").append(TABLE_FAVORITE).append(" (");
+        sb.append(FIELD_FAVORITE_ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ");
+        sb.append(FIELD_FAVORITE_KEY).append(" TEXT, ");
         sb.append(FIELD_CATEGORY_ID).append(" TEXT, ");
-        sb.append(FIELD_LIKE_ATTRS).append(" TEXT)");
+        sb.append(FIELD_FAVORITE_ATTRS).append(" TEXT, ");
+        sb.append(FIELD_UPDATE_TIME).append(" TEXT)");
         db.execSQL(sb.toString());
     }
 
@@ -49,40 +52,41 @@ public class MainDBHelper extends BSDBHelper {
 
     }
 
-    public int getLikeID(String key) {
-        int likeID = -1;
-        Cursor cursor = query(TABLE_LIKE, FIELD_LIKE_KEY, key);
+    public int getFavoriteID(String key) {
+        int favoriteID = -1;
+        Cursor cursor = query(TABLE_FAVORITE, FIELD_FAVORITE_KEY, key);
         if (cursor == null) {
             return -1;
         }
         if (cursor.moveToFirst()) {
-            likeID = cursor.getInt(cursor.getColumnIndex(FIELD_LIKE_ID));
+            favoriteID = cursor.getInt(cursor.getColumnIndex(FIELD_FAVORITE_ID));
         } else {
-            likeID = 0;
+            favoriteID = 0;
         }
         cursor.close();
-        return likeID;
+        return favoriteID;
     }
 
-    public void likeAdd(String categoryID, String key, String attrs, final DBExecuteListener listener) {
+    public void favoriteAdd(String categoryID, String key, String attrs, final DBExecuteListener listener) {
         ContentValues values = new ContentValues();
         values.put(FIELD_CATEGORY_ID, categoryID);
-        values.put(FIELD_LIKE_KEY, key);
-        values.put(FIELD_LIKE_ATTRS, attrs);
-        insert(TABLE_LIKE, values, listener);
+        values.put(FIELD_FAVORITE_KEY, key);
+        values.put(FIELD_FAVORITE_ATTRS, attrs);
+        values.put(FIELD_UPDATE_TIME, AppConfig.getServerTime());
+        insert(TABLE_FAVORITE, values, listener);
     }
 
-    public void likeRemove(int likeID, final DBExecuteListener listener) {
-        delete(TABLE_LIKE, FIELD_LIKE_ID, String.valueOf(likeID), listener);
+    public void favoriteRemove(int favoriteID, final DBExecuteListener listener) {
+        delete(TABLE_FAVORITE, FIELD_FAVORITE_ID, String.valueOf(favoriteID), listener);
     }
 
-    public void likeQuery(int count, int fromID, final DBQueryListener listener) {
+    public void favoriteQuery(int count, int fromID, final DBQueryListener listener) {
         String selection = null;
         String[] selectionArgs = null;
         if (fromID > 0) {
-            selection = FIELD_LIKE_ID + "<?";
+            selection = FIELD_FAVORITE_ID + "<?";
             selectionArgs = new String[] { String.valueOf(fromID) };
         }
-        query(TABLE_LIKE, null, selection, selectionArgs, null, null, FIELD_LIKE_ID + " DESC", String.valueOf(count), listener);
+        query(TABLE_FAVORITE, null, selection, selectionArgs, null, null, FIELD_FAVORITE_ID + " DESC", String.valueOf(count), listener);
     }
 }

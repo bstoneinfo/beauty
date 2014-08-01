@@ -75,7 +75,7 @@ public abstract class BSDBHelper extends SQLiteOpenHelper {
                     long result = getWritableDatabase().insert(table, null, values);
                     notifyListener(handler, listener, result);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    notifyListener(handler, listener, -1);
                 }
             }
         });
@@ -90,7 +90,7 @@ public abstract class BSDBHelper extends SQLiteOpenHelper {
                     long result = getWritableDatabase().insertWithOnConflict(table, null, values, SQLiteDatabase.CONFLICT_IGNORE);
                     notifyListener(handler, listener, result);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    notifyListener(handler, listener, -1);
                 }
             }
         });
@@ -105,7 +105,7 @@ public abstract class BSDBHelper extends SQLiteOpenHelper {
                     long result = getWritableDatabase().insertWithOnConflict(table, null, values, SQLiteDatabase.CONFLICT_REPLACE);
                     notifyListener(handler, listener, result);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    notifyListener(handler, listener, -1);
                 }
             }
         });
@@ -133,7 +133,7 @@ public abstract class BSDBHelper extends SQLiteOpenHelper {
                     long result = getWritableDatabase().update(table, values, whereClause, whereArgs);
                     notifyListener(handler, listener, result);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    notifyListener(handler, listener, -1);
                 }
             }
         });
