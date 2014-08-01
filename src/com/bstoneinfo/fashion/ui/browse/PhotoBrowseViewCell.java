@@ -9,8 +9,8 @@ import android.widget.ProgressBar;
 
 import com.bstoneinfo.fashion.app.MyUtils;
 import com.bstoneinfo.fashion.data.CategoryItemData;
-import com.bstoneinfo.fashion.data.MainDBHelper;
-import com.bstoneinfo.fashion.data.MainDBHelper.DBResultListener;
+import com.bstoneinfo.fashion.like.LikeAgent;
+import com.bstoneinfo.fashion.like.LikeAgent.LikeUpdateListener;
 import com.bstoneinfo.lib.common.BSImageLoader.BSImageLoadStatus;
 import com.bstoneinfo.lib.common.BSImageLoader.StatusChangedListener;
 import com.bstoneinfo.lib.common.BSLog;
@@ -26,6 +26,7 @@ public class PhotoBrowseViewCell extends BSViewCell {
     ImageView refreshView;
     private ImageView likeView;
     private CategoryItemData itemData;
+    private LikeAgent likeManager = new LikeAgent();
 
     public PhotoBrowseViewCell(Context context) {
         super(context, R.layout.photo_browse_cell);
@@ -90,13 +91,14 @@ public class PhotoBrowseViewCell extends BSViewCell {
                     }
                 });
                 imageView.setUrl("http://" + MyUtils.getHost() + itemData.thumbURL);//加载本地的缩略图
-                final boolean bLike = MainDBHelper.getSingleton().isLike(itemData);
+                final boolean bLike = likeManager.isLike(itemData);
                 likeView.setBackgroundResource(bLike ? R.drawable.heart_red : R.drawable.heart_grey);
                 likeView.setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         if (bLike) {
-                            MainDBHelper.getSingleton().likeRemove(itemData, new DBResultListener() {
+                            likeManager.likeRemove(itemData, new LikeUpdateListener() {
+
                                 @Override
                                 public void finished(boolean success) {
                                     if (success) {
@@ -105,7 +107,7 @@ public class PhotoBrowseViewCell extends BSViewCell {
                                 }
                             });
                         } else {
-                            MainDBHelper.getSingleton().likeAdd(itemData.category, itemData, new DBResultListener() {
+                            likeManager.likeAdd(itemData, new LikeUpdateListener() {
                                 @Override
                                 public void finished(boolean success) {
                                     if (success) {
@@ -125,4 +127,9 @@ public class PhotoBrowseViewCell extends BSViewCell {
         imageView.setUrl("http://" + MyUtils.getHost() + itemData.standardURL);
     }
 
+    @Override
+    public void destory() {
+        likeManager.cancel();
+        super.destory();
+    }
 }
