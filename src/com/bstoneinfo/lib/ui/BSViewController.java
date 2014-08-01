@@ -60,7 +60,7 @@ public class BSViewController {
     boolean overTopBar = false;
     private BSViewController presentingViewController, presentedViewController;
     private AnimationType presentAnimationType;
-    private BSNotificationCenter notificationCenter;
+    private BSNotificationCenter notificationCenter = BSApplication.defaultNotificationCenter;
     private final ArrayList<BSTimer> asyncRunArrayList = new ArrayList<BSTimer>();
     private final ArrayList<BSAnimation> animationList = new ArrayList<BSAnimation>();
 

@@ -14,7 +14,6 @@ import com.bstoneinfo.fashion.app.MyUtils;
 import com.bstoneinfo.fashion.app.NotificationEvent;
 import com.bstoneinfo.lib.common.BSApplication;
 import com.bstoneinfo.lib.common.BSLog;
-import com.bstoneinfo.lib.common.BSNotificationCenter;
 import com.bstoneinfo.lib.common.BSUtils;
 import com.bstoneinfo.lib.net.BSJsonConnection;
 import com.bstoneinfo.lib.net.BSJsonConnection.BSJsonConnectionListener;
@@ -23,7 +22,6 @@ public class CategoryDataSource {
 
     private final String categoryName;
     private final int groupSize;
-    private final BSNotificationCenter notificationCenter;
 
     private JSONArray histroyJsonArray;
     private final int[] histroyGroupArray;
@@ -33,9 +31,8 @@ public class CategoryDataSource {
     private BSJsonConnection histroyJsonConnection;
     private boolean isLoadingExplore = false, isLoadingHistroy = false;
 
-    public CategoryDataSource(String name, BSNotificationCenter notificationCenter) {
+    public CategoryDataSource(String name) {
         this.categoryName = name;
-        this.notificationCenter = notificationCenter;
         JSONObject sizeJson = BSApplication.getApplication().getRemoteConfig().optJSONObject("CategorySize");
         if (sizeJson != null) {
             groupSize = sizeJson.optInt(categoryName, 30);
@@ -127,7 +124,7 @@ public class CategoryDataSource {
     }
 
     private void notifyExploreFinished(ArrayList<CategoryItemData> dataList) {
-        notificationCenter.notifyOnUIThread(NotificationEvent.CATEGORY_EXPLORE_FINISHED_ + categoryName, dataList);
+        BSApplication.defaultNotificationCenter.notifyOnUIThread(NotificationEvent.CATEGORY_EXPLORE_FINISHED_ + categoryName, dataList);
         isLoadingExplore = false;
         if (dataList == null) {
             return;
@@ -213,14 +210,14 @@ public class CategoryDataSource {
     }
 
     private void notifyHistroyFinished(ArrayList<CategoryItemData> dataList) {
-        notificationCenter.notifyOnUIThread(NotificationEvent.CATEGORY_HISTORY_FINISHED_ + categoryName, dataList);
+        BSApplication.defaultNotificationCenter.notifyOnUIThread(NotificationEvent.CATEGORY_HISTORY_FINISHED_ + categoryName, dataList);
         isLoadingHistroy = false;
         if (dataList == null || dataList.isEmpty()) {
             return;
         }
         nextHistroyIndex++;
         if (nextHistroyIndex >= histroyGroupArray.length) {
-            notificationCenter.notifyOnUIThread(NotificationEvent.CATEGORY_HISTORY_FINISHED_ + categoryName, new ArrayList<CategoryItemData>());
+            BSApplication.defaultNotificationCenter.notifyOnUIThread(NotificationEvent.CATEGORY_HISTORY_FINISHED_ + categoryName, new ArrayList<CategoryItemData>());
         }
     }
 

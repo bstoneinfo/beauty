@@ -50,7 +50,6 @@ public abstract class WaterFallViewController extends BSWaterFallViewController 
     public WaterFallViewController(Context context, String category, final String dataEventName) {
         super(context, COLUMN_COUNT, BSActivity.dip2px(COLUMN_INTERVAL_DP));
         this.categoryName = category;
-        setNotificationCenter(BSApplication.defaultNotificationCenter);
 
         adchina = new BSAdBannerAdChina(getActivity());
         adBaidu = new BSAdBannerBaidu(getActivity());
@@ -73,7 +72,7 @@ public abstract class WaterFallViewController extends BSWaterFallViewController 
         loadmoreView.findViewById(R.id.loadmore_button).setOnClickListener(loadmoreClickListener);
         loadmoreView.findViewById(R.id.loadmore_refresh).setOnClickListener(loadmoreClickListener);
 
-        addNotificationObserver(dataEventName, new Observer() {
+        BSApplication.defaultNotificationCenter.addObserver(this, dataEventName, new Observer() {
             @SuppressWarnings("unchecked")
             @Override
             public void update(Observable observable, Object data) {

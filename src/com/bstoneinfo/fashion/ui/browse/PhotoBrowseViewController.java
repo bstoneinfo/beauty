@@ -15,6 +15,7 @@ import com.bstoneinfo.fashion.data.CategoryItemData;
 import com.bstoneinfo.lib.ad.BSAdBannerAdChina;
 import com.bstoneinfo.lib.ad.BSAdBannerAdmob;
 import com.bstoneinfo.lib.ad.BSAdBannerViewController;
+import com.bstoneinfo.lib.common.BSApplication;
 import com.bstoneinfo.lib.ui.BSViewController;
 import com.bstoneinfo.lib.view.BSPagerView;
 import com.bstoneinfo.lib.widget.BSCellAdapter;
@@ -95,7 +96,7 @@ public abstract class PhotoBrowseViewController extends BSViewController {
             }
         });
 
-        addNotificationObserver(dataEventName, new Observer() {
+        BSApplication.defaultNotificationCenter.addObserver(this, dataEventName, new Observer() {
             @Override
             public void update(Observable observable, Object data) {
                 final int loadmorePosition = itemDataList.size();
