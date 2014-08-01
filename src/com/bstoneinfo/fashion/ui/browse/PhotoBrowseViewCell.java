@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
+import com.bstoneinfo.fashion.app.MyUtils;
 import com.bstoneinfo.fashion.data.CategoryItemData;
 import com.bstoneinfo.lib.common.BSImageLoader.BSImageLoadStatus;
 import com.bstoneinfo.lib.common.BSImageLoader.StatusChangedListener;
@@ -83,13 +84,13 @@ public class PhotoBrowseViewCell extends BSViewCell {
                         }
                     }
                 });
-                imageView.setUrl(itemData.thumbURL);//加载本地的缩略图
+                imageView.setUrl("http://" + MyUtils.getHost() + itemData.thumbURL);//加载本地的缩略图
             }
         }
     }
 
     private void loadStandardPhoto(final CategoryItemData itemData) {
-        imageView.setUrl(itemData.standardURL);
+        imageView.setUrl("http://" + MyUtils.getHost() + itemData.standardURL);
     }
 
 }

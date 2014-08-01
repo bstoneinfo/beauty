@@ -16,6 +16,10 @@ public abstract class BSDBHelper extends SQLiteOpenHelper {
         public void finished(long result);
     }
 
+    public interface DBQueryListener {
+        public void finished(Cursor cursor);
+    }
+
     public BSDBHelper(Context context, String name, int version) {
         super(context, name, null, version);
     }
@@ -29,6 +33,18 @@ public abstract class BSDBHelper extends SQLiteOpenHelper {
                 }
             });
         }
+    }
+
+    protected void notifyListener(Handler handler, final DBQueryListener listener, final Cursor cursor) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                listener.finished(cursor);
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+        });
     }
 
     public void execute(final String sql, final DBExecuteListener listener) {
@@ -176,39 +192,56 @@ public abstract class BSDBHelper extends SQLiteOpenHelper {
     }
 
     public Cursor query(String table, String keyField, String keyValue) {
-        return query(false, table, null, keyField + "=?", new String[] { keyValue }, null, null, null, null);
+        return query(table, null, keyField + "=?", new String[] { keyValue }, null, null, null, null, false);
     }
 
     public Cursor query(String table, String[] columns, String keyField, String keyValue) {
-        return query(false, table, columns, keyField + "=?", new String[] { keyValue }, null, null, null, null);
+        return query(table, columns, keyField + "=?", new String[] { keyValue }, null, null, null, null, false);
     }
 
     public Cursor query(String table) {
-        return query(false, table, null, null, null, null, null, null, null);
+        return query(table, null, null, null, null, null, null, null, false);
     }
 
     public Cursor query(String table, String[] columns) {
-        return query(false, table, columns, null, null, null, null, null, null);
+        return query(table, columns, null, null, null, null, null, null, false);
     }
 
     public Cursor query(String table, String[] columns, String selection) {
-        return query(false, table, columns, selection, null, null, null, null, null);
+        return query(table, columns, selection, null, null, null, null, null, false);
     }
 
     public Cursor query(String table, String[] columns, String selection, String[] selectionArgs) {
-        return query(false, table, columns, selection, selectionArgs, null, null, null, null);
+        return query(table, columns, selection, selectionArgs, null, null, null, null, false);
     }
 
     public Cursor query(String table, String[] columns, String selection, String[] selectionArgs, String groupBy, String having, String orderBy) {
-        return query(false, table, columns, selection, selectionArgs, groupBy, having, orderBy, null);
+        return query(table, columns, selection, selectionArgs, groupBy, having, orderBy, null, false);
     }
 
     public Cursor query(String table, String[] columns, String selection, String[] selectionArgs, String groupBy, String having, String orderBy, String limit) {
-        return query(false, table, columns, selection, selectionArgs, groupBy, having, orderBy, limit);
+        return query(table, columns, selection, selectionArgs, groupBy, having, orderBy, limit, false);
     }
 
-    public Cursor query(boolean distinct, String table, String[] columns, String selection, String[] selectionArgs, String groupBy, String having, String orderBy, String limit) {
+    public Cursor query(String table, String[] columns, String selection, String[] selectionArgs, String groupBy, String having, String orderBy, String limit, boolean distinct) {
         return getReadableDatabase().query(distinct, table, columns, selection, selectionArgs, groupBy, having, orderBy, limit);
+    }
+
+    public void query(final String table, final String[] columns, final String selection, final String[] selectionArgs, final String groupBy, final String having,
+            final String orderBy, final String limit, final DBQueryListener listener) {
+        final Handler handler = new Handler();
+        BSApplication.databaseThread.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Cursor cursor = query(table, columns, selection, selectionArgs, groupBy, having, orderBy, limit, false);
+                    notifyListener(handler, listener, cursor);
+                } catch (Exception e) {
+                    BSLog.e(e.getMessage());
+                    notifyListener(handler, listener, null);
+                }
+            }
+        });
     }
 
     /**

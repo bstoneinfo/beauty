@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 
+import com.bstoneinfo.fashion.app.MyUtils;
 import com.bstoneinfo.fashion.data.CategoryDataSource;
 import com.bstoneinfo.fashion.data.CategoryItemData;
 import com.bstoneinfo.fashion.data.CategoryManager;
@@ -87,7 +88,7 @@ public abstract class WaterFallViewController extends BSWaterFallViewController 
                         int position = itemDataList.size();
                         itemDataList.addAll(dataList);
                         for (CategoryItemData itemData : dataList) {
-                            final String remoteUrl = itemData.thumbURL;
+                            final String remoteUrl = "http://" + MyUtils.getHost() + itemData.thumbURL;
                             final BSImageView imageView = new BSImageView(getContext());
                             imageView.setBackgroundColor(0xFFD0D0D0);
                             imageView.setConnectionQueue(connectionQueue);
