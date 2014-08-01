@@ -2,12 +2,12 @@ package com.bstoneinfo.fashion.ui.main;
 
 import android.content.Context;
 
-import com.bstoneinfo.fashion.data.CategoryDataSource;
+import com.bstoneinfo.fashion.app.NotificationEvent;
 
 public class ExploreWaterFallViewController extends WaterFallViewController {
 
     public ExploreWaterFallViewController(Context context, String categoryName) {
-        super(context, categoryName, CategoryDataSource.CATEGORY_EXPLORE_FINISHED + categoryName);
+        super(context, categoryName, NotificationEvent.CATEGORY_EXPLORE_FINISHED_ + categoryName);
     }
 
     @Override
