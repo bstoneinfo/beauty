@@ -1,12 +1,20 @@
 package com.bstoneinfo.fashion.ui.browse;
 
+import java.util.Observable;
+import java.util.Observer;
+
 import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
+import com.bstoneinfo.fashion.app.MyUtils;
+import com.bstoneinfo.fashion.app.NotificationEvent;
 import com.bstoneinfo.fashion.data.CategoryItemData;
+import com.bstoneinfo.fashion.favorite.FavoriteManager;
+import com.bstoneinfo.lib.common.BSApplication;
 import com.bstoneinfo.lib.common.BSImageLoader.BSImageLoadStatus;
 import com.bstoneinfo.lib.common.BSImageLoader.StatusChangedListener;
 import com.bstoneinfo.lib.common.BSLog;
@@ -20,6 +28,7 @@ public class PhotoBrowseViewCell extends BSViewCell {
     private BSImageView imageView;
     private ProgressBar progressBar;
     ImageView refreshView;
+    private ImageView favoriteView;
     private CategoryItemData itemData;
 
     public PhotoBrowseViewCell(Context context) {
@@ -27,6 +36,13 @@ public class PhotoBrowseViewCell extends BSViewCell {
         imageView = (BSImageView) getRootView().findViewById(R.id.imageView);
         refreshView = (ImageView) getRootView().findViewById(R.id.refresh);
         progressBar = (ProgressBar) getRootView().findViewById(R.id.progressBar);
+        favoriteView = (ImageView) getRootView().findViewById(R.id.favorite);
+        BSApplication.defaultNotificationCenter.addObserver(this, NotificationEvent.CATEGORY_ITEM_DATA_FINISHED, new Observer() {
+            @Override
+            public void update(Observable observable, Object data) {
+                setFavoriteView();
+            }
+        });
     }
 
     @Override
@@ -83,13 +99,38 @@ public class PhotoBrowseViewCell extends BSViewCell {
                         }
                     }
                 });
-                imageView.setUrl(itemData.thumbURL);//加载本地的缩略图
+                imageView.setUrl("http://" + MyUtils.getHost() + itemData.thumbURL);//加载本地的缩略图
+                setFavoriteView();
+                favoriteView.setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (FavoriteManager.getInstance().isFavorite(itemData)) {
+                            FavoriteManager.getInstance().favoriteRemove(itemData);
+                        } else {
+                            FavoriteManager.getInstance().favoriteAdd(itemData);
+
+                        }
+                    }
+                });
             }
         }
     }
 
-    private void loadStandardPhoto(final CategoryItemData itemData) {
-        imageView.setUrl(itemData.standardURL);
+    private void setFavoriteView() {
+        if (FavoriteManager.getInstance().isFavorite(itemData)) {
+            favoriteView.setBackgroundResource(R.drawable.heart_red);
+        } else {
+            favoriteView.setBackgroundResource(R.drawable.heart_grey);
+        }
     }
 
+    private void loadStandardPhoto(final CategoryItemData itemData) {
+        imageView.setUrl("http://" + MyUtils.getHost() + itemData.standardURL);
+    }
+
+    @Override
+    public void destory() {
+        BSApplication.defaultNotificationCenter.removeObservers(this);
+        super.destory();
+    }
 }

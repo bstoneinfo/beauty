@@ -15,6 +15,7 @@ import com.bstoneinfo.fashion.data.CategoryItemData;
 import com.bstoneinfo.lib.ad.BSAdBannerAdChina;
 import com.bstoneinfo.lib.ad.BSAdBannerAdmob;
 import com.bstoneinfo.lib.ad.BSAdBannerViewController;
+import com.bstoneinfo.lib.common.BSApplication;
 import com.bstoneinfo.lib.ui.BSViewController;
 import com.bstoneinfo.lib.view.BSPagerView;
 import com.bstoneinfo.lib.widget.BSCellAdapter;
@@ -22,6 +23,7 @@ import com.bstoneinfo.lib.widget.BSViewCell;
 
 public abstract class PhotoBrowseViewController extends BSViewController {
 
+    final private String categoryName;
     final private BSPagerView pagerView;
     final private String dataEventName;
     final private ArrayList<CategoryItemData> itemDataList;
@@ -30,9 +32,10 @@ public abstract class PhotoBrowseViewController extends BSViewController {
     private boolean bLoadmoreFailed = false;
     final private BSAdBannerViewController adBanner;
 
-    public PhotoBrowseViewController(Context context, ArrayList<CategoryItemData> itemDataList, String dataEventName, int position, boolean loadmoreEnded) {
+    public PhotoBrowseViewController(Context context, String category, ArrayList<CategoryItemData> itemDataList, String dataEventName, int position, boolean loadmoreEnded) {
         super(new LinearLayout(context));
         ((LinearLayout) getRootView()).setOrientation(LinearLayout.VERTICAL);
+        this.categoryName = category;
         this.dataEventName = dataEventName;
         this.position = position;
         this.itemDataList = (ArrayList<CategoryItemData>) itemDataList.clone();
@@ -56,7 +59,7 @@ public abstract class PhotoBrowseViewController extends BSViewController {
                     return itemDataList.get(position);
                 }
                 if (bLoadmoreFailed) {
-                    return new CategoryItemData();
+                    return new CategoryItemData(categoryName);
                 }
                 return null;
             }
@@ -93,7 +96,7 @@ public abstract class PhotoBrowseViewController extends BSViewController {
             }
         });
 
-        addNotificationObserver(dataEventName, new Observer() {
+        BSApplication.defaultNotificationCenter.addObserver(this, dataEventName, new Observer() {
             @Override
             public void update(Observable observable, Object data) {
                 final int loadmorePosition = itemDataList.size();

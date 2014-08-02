@@ -5,8 +5,10 @@ import java.util.ArrayList;
 import android.os.Bundle;
 
 import com.bstoneinfo.fashion.data.CategoryManager;
+import com.bstoneinfo.fashion.data.MainDBHelper;
+import com.bstoneinfo.fashion.favorite.FavoriteManager;
+import com.bstoneinfo.fashion.favorite.FavoriteViewController;
 import com.bstoneinfo.fashion.ui.main.CategoryViewController;
-import com.bstoneinfo.fashion.ui.main.FavoriteViewController;
 import com.bstoneinfo.fashion.ui.main.SettingsViewController;
 import com.bstoneinfo.lib.ad.BSAdFSAdChina;
 import com.bstoneinfo.lib.ad.BSAdFullscreen;
@@ -23,6 +25,8 @@ public class MainActivity extends BSActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        MainDBHelper.createSingleton(this);
 
         CategoryViewController category51ViewController = new CategoryViewController(this, "51");
         CategoryViewController category52ViewController = new CategoryViewController(this, "52");
@@ -45,6 +49,7 @@ public class MainActivity extends BSActivity {
     @Override
     protected void onDestroy() {
         CategoryManager.getInstance().reset();
+        FavoriteManager.getInstance().reset();
         super.onDestroy();
     }
 

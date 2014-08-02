@@ -10,9 +10,8 @@ import android.view.View;
 import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 
-import com.bstoneinfo.fashion.data.CategoryDataSource;
+import com.bstoneinfo.fashion.app.MyUtils;
 import com.bstoneinfo.fashion.data.CategoryItemData;
-import com.bstoneinfo.fashion.data.CategoryManager;
 import com.bstoneinfo.fashion.ui.browse.PhotoBrowseViewController;
 import com.bstoneinfo.lib.ad.BSAdBannerAdChina;
 import com.bstoneinfo.lib.ad.BSAdBannerBaidu;
@@ -27,18 +26,17 @@ import com.bstoneinfo.lib.view.BSScrollView.OnScrollChangedListener;
 
 import custom.R;
 
-public abstract class WaterFallViewController extends BSWaterFallViewController {
+public abstract class ImageWaterFallViewController extends BSWaterFallViewController {
 
-    private final static int COLUMN_COUNT = 3;
-    private final static int COLUMN_INTERVAL_DP = 5;
+    public final static int COLUMN_COUNT = 3;
+    public final static int COLUMN_INTERVAL_DP = 5;
     private final int columnWidth = (BSActivity.getDisplayMetrics().widthPixels - BSActivity.dip2px(COLUMN_INTERVAL_DP) * (COLUMN_COUNT + 1)) / COLUMN_COUNT;
 
-    private final BSHttpUrlConnectionQueue connectionQueue = new BSHttpUrlConnectionQueue(10);
-    private final ArrayList<CategoryItemData> itemDataList = new ArrayList<CategoryItemData>();
+    protected final BSHttpUrlConnectionQueue connectionQueue = new BSHttpUrlConnectionQueue(10);
+    protected final ArrayList<CategoryItemData> itemDataList = new ArrayList<CategoryItemData>();
     private final ArrayList<BSImageView> imageViewList = new ArrayList<BSImageView>();
+    private final String dataEventName;
     private boolean memoryWaringReceived = false;
-
-    protected final String categoryName;
 
     private final BSAdBannerAdChina adchina;
     private final BSAdBannerBaidu adBaidu;
@@ -46,10 +44,9 @@ public abstract class WaterFallViewController extends BSWaterFallViewController 
 
     abstract protected void loadMore();
 
-    public WaterFallViewController(Context context, String categoryName, final String dataEventName) {
+    public ImageWaterFallViewController(Context context, String dataEventName) {
         super(context, COLUMN_COUNT, BSActivity.dip2px(COLUMN_INTERVAL_DP));
-        this.categoryName = categoryName;
-        setNotificationCenter(BSApplication.defaultNotificationCenter);
+        this.dataEventName = dataEventName;
 
         adchina = new BSAdBannerAdChina(getActivity());
         adBaidu = new BSAdBannerBaidu(getActivity());
@@ -72,7 +69,7 @@ public abstract class WaterFallViewController extends BSWaterFallViewController 
         loadmoreView.findViewById(R.id.loadmore_button).setOnClickListener(loadmoreClickListener);
         loadmoreView.findViewById(R.id.loadmore_refresh).setOnClickListener(loadmoreClickListener);
 
-        addNotificationObserver(dataEventName, new Observer() {
+        BSApplication.defaultNotificationCenter.addObserver(this, dataEventName, new Observer() {
             @SuppressWarnings("unchecked")
             @Override
             public void update(Observable observable, Object data) {
@@ -84,46 +81,14 @@ public abstract class WaterFallViewController extends BSWaterFallViewController 
                         setPullupState(PullUpState.FINISHED);
                     } else {
                         setPullupState(PullUpState.NORMAL);
-                        int position = itemDataList.size();
                         itemDataList.addAll(dataList);
                         for (CategoryItemData itemData : dataList) {
-                            final String remoteUrl = itemData.thumbURL;
-                            final BSImageView imageView = new BSImageView(getContext());
-                            imageView.setBackgroundColor(0xFFD0D0D0);
-                            imageView.setConnectionQueue(connectionQueue);
-                            imageView.setScaleType(ScaleType.FIT_CENTER);
-                            imageView.setUrl(remoteUrl);
-                            addView(imageView, columnWidth, columnWidth * itemData.thumbHeight / itemData.thumbWidth);
-                            final int finalPosition = position;
-                            imageView.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    BSImageLoadStatus status = imageView.getImageLoadStatus();
-                                    if (status == BSImageLoadStatus.LOADED) {
-                                        PhotoBrowseViewController photoBrowseViewController = new PhotoBrowseViewController(getContext(), itemDataList, dataEventName,
-                                                finalPosition, getPullUpState() == PullUpState.FINISHED) {
-                                            @Override
-                                            protected void loadMore() {
-                                                WaterFallViewController.this.loadMore();
-                                            }
-                                        };
-                                        presentModalViewController(photoBrowseViewController, AnimationType.None);
-                                    } else if (status == BSImageLoadStatus.FAILED) {
-                                        imageView.setUrl(remoteUrl);
-                                    }
-                                }
-                            });
-                            position++;
+                            addView(itemData);
                         }
                     }
                 }
             }
-
         });
-    }
-
-    protected CategoryDataSource getDataSource() {
-        return CategoryManager.getInstance().getDataSource(categoryName);
     }
 
     @Override
@@ -198,14 +163,39 @@ public abstract class WaterFallViewController extends BSWaterFallViewController 
         imageView.setVisible(bVisible);
     }
 
-    @Override
-    public void addView(View childView, int width, int height) {
-        BSImageView imageView = (BSImageView) childView;
+    protected void addView(final CategoryItemData itemData) {
+        final int position = getChildViewCount();
+        final String remoteUrl = "http://" + MyUtils.getHost() + itemData.thumbURL;
+        final BSImageView imageView = new BSImageView(getContext());
+        imageView.setBackgroundColor(0xFFD0D0D0);
+        imageView.setConnectionQueue(connectionQueue);
+        imageView.setScaleType(ScaleType.FIT_CENTER);
+        int width = columnWidth;
+        int height = columnWidth * itemData.thumbHeight / itemData.thumbWidth;
         imageViewList.add(imageView);
         if (memoryWaringReceived) {
             setImageViewVisible(imageView, getViewStatus() == ViewStatus.Appearing || getViewStatus() == ViewStatus.Appeared);
         }
-        super.addView(childView, width, height);
+        super.addView(imageView, width, height);
+        imageView.setUrl(remoteUrl);
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                BSImageLoadStatus status = imageView.getImageLoadStatus();
+                if (status == BSImageLoadStatus.LOADED) {
+                    PhotoBrowseViewController photoBrowseViewController = new PhotoBrowseViewController(getContext(), itemData.category, itemDataList, dataEventName, position,
+                            getPullUpState() == PullUpState.FINISHED) {
+                        @Override
+                        protected void loadMore() {
+                            ImageWaterFallViewController.this.loadMore();
+                        }
+                    };
+                    presentModalViewController(photoBrowseViewController, AnimationType.None);
+                } else if (status == BSImageLoadStatus.FAILED) {
+                    imageView.setUrl(remoteUrl);
+                }
+            }
+        });
     }
 
     @Override
