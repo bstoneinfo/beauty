@@ -4,7 +4,7 @@ import android.content.Context;
 
 import com.bstoneinfo.fashion.app.NotificationEvent;
 
-public class HistroyWaterFallViewController extends NetworkWaterFallViewController {
+public class HistroyWaterFallViewController extends CategoryWaterFallViewController {
 
     public HistroyWaterFallViewController(Context context, String categoryName) {
         super(context, categoryName, NotificationEvent.CATEGORY_HISTORY_FINISHED_ + categoryName);

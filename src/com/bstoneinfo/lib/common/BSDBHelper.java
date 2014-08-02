@@ -53,7 +53,7 @@ public abstract class BSDBHelper extends SQLiteOpenHelper {
 
     public void execute(final String sql, final Object[] bindArgs, final DBExecuteListener listener) {
         final Handler handler = new Handler();
-        BSApplication.databaseThread.post(new Runnable() {
+        BSApplication.databaseThread.run(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -68,7 +68,7 @@ public abstract class BSDBHelper extends SQLiteOpenHelper {
 
     public void insert(final String table, final ContentValues values, final DBExecuteListener listener) {
         final Handler handler = new Handler();
-        BSApplication.databaseThread.post(new Runnable() {
+        BSApplication.databaseThread.run(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -83,7 +83,7 @@ public abstract class BSDBHelper extends SQLiteOpenHelper {
 
     public void insertOrIgnore(final String table, final ContentValues values, final DBExecuteListener listener) {
         final Handler handler = new Handler();
-        BSApplication.databaseThread.post(new Runnable() {
+        BSApplication.databaseThread.run(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -98,7 +98,7 @@ public abstract class BSDBHelper extends SQLiteOpenHelper {
 
     public void insertOrReplace(final String table, final ContentValues values, final DBExecuteListener listener) {
         final Handler handler = new Handler();
-        BSApplication.databaseThread.post(new Runnable() {
+        BSApplication.databaseThread.run(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -126,7 +126,7 @@ public abstract class BSDBHelper extends SQLiteOpenHelper {
 
     public void update(final String table, final ContentValues values, final String whereClause, final String[] whereArgs, final DBExecuteListener listener) {
         final Handler handler = new Handler();
-        BSApplication.databaseThread.post(new Runnable() {
+        BSApplication.databaseThread.run(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -149,7 +149,7 @@ public abstract class BSDBHelper extends SQLiteOpenHelper {
 
     public void delete(final String table, final String whereClause, final String[] whereArgs, final DBExecuteListener listener) {
         final Handler handler = new Handler();
-        BSApplication.databaseThread.post(new Runnable() {
+        BSApplication.databaseThread.run(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -230,7 +230,7 @@ public abstract class BSDBHelper extends SQLiteOpenHelper {
     public void query(final String table, final String[] columns, final String selection, final String[] selectionArgs, final String groupBy, final String having,
             final String orderBy, final String limit, final DBQueryListener listener) {
         final Handler handler = new Handler();
-        BSApplication.databaseThread.post(new Runnable() {
+        BSApplication.databaseThread.run(new Runnable() {
             @Override
             public void run() {
                 try {

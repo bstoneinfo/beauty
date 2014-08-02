@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Handler;
 
 import com.bstoneinfo.fashion.app.AppConfig;
 import com.bstoneinfo.lib.common.BSDBHelper;
@@ -68,6 +69,16 @@ public class MainDBHelper extends BSDBHelper {
     }
 
     public void favoriteAdd(String categoryID, String key, String attrs, final DBExecuteListener listener) {
+        final int favoriateID = getFavoriteID(key);
+        if (favoriateID > 0) {
+            new Handler().post(new Runnable() {
+                @Override
+                public void run() {
+                    listener.finished(favoriateID);
+                }
+            });
+            return;
+        }
         ContentValues values = new ContentValues();
         values.put(FIELD_CATEGORY_ID, categoryID);
         values.put(FIELD_FAVORITE_KEY, key);

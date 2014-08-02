@@ -30,6 +30,10 @@ public class CategoryItemData {
         standardHeight = jsonItem.optInt("height");
     }
 
+    public String getFavoriteKey() {
+        return standardURL;
+    }
+
     @Override
     public String toString() {
         return standardURL;

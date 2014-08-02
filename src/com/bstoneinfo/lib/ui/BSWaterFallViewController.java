@@ -114,6 +114,14 @@ public class BSWaterFallViewController extends BSViewController {
         setPullupState(PullUpState.NORMAL);
     }
 
+    public int getChildViewCount() {
+        int count = 0;
+        for (int i = 0; i < columnCount; i++) {
+            count += columnLayoutArray[i].getChildCount();
+        }
+        return count;
+    }
+
     public void addView(View childView, int width, int height) {
         int minHeight = columnHeightArray[0];
         int minColumn = 0;
@@ -125,8 +133,15 @@ public class BSWaterFallViewController extends BSViewController {
         }
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(width, height);
         lp.setMargins(0, 0, 0, columnInterval);
-        columnLayoutArray[minColumn].addView(childView, lp);
         columnHeightArray[minColumn] += height;
+        columnLayoutArray[minColumn].addView(childView, lp);
+    }
+
+    public void removeAllViews() {
+        for (int i = 0; i < columnCount; i++) {
+            columnHeightArray[i] = 0;
+            columnLayoutArray[i].removeAllViews();
+        }
     }
 
 }

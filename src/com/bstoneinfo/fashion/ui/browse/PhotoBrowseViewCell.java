@@ -1,5 +1,8 @@
 package com.bstoneinfo.fashion.ui.browse;
 
+import java.util.Observable;
+import java.util.Observer;
+
 import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
@@ -8,9 +11,10 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.bstoneinfo.fashion.app.MyUtils;
+import com.bstoneinfo.fashion.app.NotificationEvent;
 import com.bstoneinfo.fashion.data.CategoryItemData;
-import com.bstoneinfo.fashion.favorite.FavoriteAgent;
-import com.bstoneinfo.fashion.favorite.FavoriteAgent.FavoriteUpdateListener;
+import com.bstoneinfo.fashion.favorite.FavoriteManager;
+import com.bstoneinfo.lib.common.BSApplication;
 import com.bstoneinfo.lib.common.BSImageLoader.BSImageLoadStatus;
 import com.bstoneinfo.lib.common.BSImageLoader.StatusChangedListener;
 import com.bstoneinfo.lib.common.BSLog;
@@ -26,7 +30,6 @@ public class PhotoBrowseViewCell extends BSViewCell {
     ImageView refreshView;
     private ImageView favoriteView;
     private CategoryItemData itemData;
-    private FavoriteAgent favoriteAgent = new FavoriteAgent();
 
     public PhotoBrowseViewCell(Context context) {
         super(context, R.layout.photo_browse_cell);
@@ -34,6 +37,12 @@ public class PhotoBrowseViewCell extends BSViewCell {
         refreshView = (ImageView) getRootView().findViewById(R.id.refresh);
         progressBar = (ProgressBar) getRootView().findViewById(R.id.progressBar);
         favoriteView = (ImageView) getRootView().findViewById(R.id.favorite);
+        BSApplication.defaultNotificationCenter.addObserver(this, NotificationEvent.CATEGORY_ITEM_DATA_FINISHED, new Observer() {
+            @Override
+            public void update(Observable observable, Object data) {
+                setFavoriteView();
+            }
+        });
     }
 
     @Override
@@ -91,45 +100,27 @@ public class PhotoBrowseViewCell extends BSViewCell {
                     }
                 });
                 imageView.setUrl("http://" + MyUtils.getHost() + itemData.thumbURL);//加载本地的缩略图
-                if (favoriteAgent.isFavorite(itemData)) {
-                    favoriteView.setBackgroundResource(R.drawable.heart_red);
-                } else {
-                    favoriteView.setBackgroundResource(R.drawable.heart_grey);
-                }
+                setFavoriteView();
                 favoriteView.setOnClickListener(new OnClickListener() {
-                    private boolean bUpdating = false;
-
                     @Override
                     public void onClick(View v) {
-                        if (bUpdating) {
-                            return;
-                        }
-                        bUpdating = true;
-                        if (favoriteAgent.isFavorite(itemData)) {
-                            favoriteAgent.favoriteRemove(itemData, new FavoriteUpdateListener() {
-                                @Override
-                                public void finished(boolean success) {
-                                    if (success) {
-                                        favoriteView.setBackgroundResource(R.drawable.heart_grey);
-                                    }
-                                    bUpdating = false;
-                                }
-                            });
+                        if (FavoriteManager.getInstance().isFavorite(itemData)) {
+                            FavoriteManager.getInstance().favoriteRemove(itemData);
                         } else {
-                            favoriteAgent.favoriteAdd(itemData, new FavoriteUpdateListener() {
-                                @Override
-                                public void finished(boolean success) {
-                                    if (success) {
-                                        favoriteView.setBackgroundResource(R.drawable.heart_red);
-                                    }
-                                    bUpdating = false;
-                                }
-                            });
+                            FavoriteManager.getInstance().favoriteAdd(itemData);
 
                         }
                     }
                 });
             }
+        }
+    }
+
+    private void setFavoriteView() {
+        if (FavoriteManager.getInstance().isFavorite(itemData)) {
+            favoriteView.setBackgroundResource(R.drawable.heart_red);
+        } else {
+            favoriteView.setBackgroundResource(R.drawable.heart_grey);
         }
     }
 
@@ -139,7 +130,7 @@ public class PhotoBrowseViewCell extends BSViewCell {
 
     @Override
     public void destory() {
-        favoriteAgent.cancel();
+        BSApplication.defaultNotificationCenter.removeObservers(this);
         super.destory();
     }
 }
